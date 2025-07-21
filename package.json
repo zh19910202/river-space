@@ -1,0 +1,76 @@
+{
+  "name": "river-space",
+  "version": "1.0.0",
+  "description": "River Space - 智能合约开发工程师个人网站与技术博客",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview --port 3000",
+    "lint": "eslint src --ext .js,.ts --fix",
+    "format": "prettier --write \"src/**/*.{js,ts,css,html}\"",
+    "clean": "rimraf dist",
+    "deploy": "npm run build && npm run serve",
+    "notion:setup": "node scripts/notion-setup.js",
+    "proxy": "node github-proxy-server.js",
+    "dev:full": "concurrently \"npm run proxy\" \"npm run dev\"",
+    "start": "npm run dev"
+  },
+  "keywords": [
+    "portfolio",
+    "blog",
+    "notion-cms",
+    "web3",
+    "blockchain",
+    "solidity"
+  ],
+  "author": {
+    "name": "周欢",
+    "email": "zhouhuan19910202@gmail.com",
+    "url": "https://github.com/zh19910202"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-legacy": "^5.2.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "terser": "^5.26.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@notionhq/client": "^4.0.1",
+    "axios": "^1.6.2",
+    "dompurify": "^3.0.7",
+    "dotenv": "^17.2.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "highlight.js": "^11.9.0",
+    "marked": "^11.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-legacy": "^5.2.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "terser": "^5.26.0",
+    "vite": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zh19910202/river-space.git"
+  },
+  "homepage": "https://zh19910202.github.io/river-space",
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

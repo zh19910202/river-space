@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown渲染测试</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: rgba(26, 26, 46, 0.8);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .markdown-content {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+        
+        .markdown-content h1, h2, h3 {
+            color: #00ffff;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .markdown-content pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        
+        .markdown-content code {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Markdown渲染测试</h1>
+    
+    <div class="test-section">
+        <h2>原始Markdown内容：</h2>
+        <textarea id="markdownInput" rows="10" style="width: 100%; background: #222; color: white; padding: 10px;">
+# 测试标题
+这是一段**粗体文字**和*斜体文字*。
+
+## 代码示例
+```javascript
+function hello() {
+    console.log("Hello World!");
+}
+```
+
+- 列表项1
+- 列表项2
+- 列表项3
+
+> 这是一个引用块
+
+[这是一个链接](https://example.com)
+        </textarea>
+        
+        <button class="test-button" onclick="testMarkdownParsing()">测试Markdown解析</button>
+        <button class="test-button" onclick="testContentParser()">测试ContentParser</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>解析结果：</h2>
+        <div id="parseResult" class="markdown-content">
+            点击上面的按钮开始测试...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>HTML源码：</h2>
+        <pre id="htmlSource">点击上面的按钮开始测试...</pre>
+    </div>
+
+    <script type="module">
+        import { ContentParser } from './src/utils/contentParser.js'
+        
+        window.contentParser = new ContentParser()
+        
+        window.testMarkdownParsing = function() {
+            const input = document.getElementById('markdownInput').value
+            const result = document.getElementById('parseResult')
+            const source = document.getElementById('htmlSource')
+            
+            console.log('原始输入:', input)
+            
+            try {
+                const htmlContent = window.contentParser.parseMarkdown(input)
+                console.log('解析结果:', htmlContent)
+                
+                result.innerHTML = htmlContent
+                source.textContent = htmlContent
+                
+            } catch (error) {
+                console.error('解析错误:', error)
+                result.innerHTML = `<p style="color: red;">解析错误: ${error.message}</p>`
+                source.textContent = `解析错误: ${error.message}`
+            }
+        }
+        
+        window.testContentParser = function() {
+            console.log('ContentParser实例:', window.contentParser)
+            console.log('parseMarkdown方法:', window.contentParser.parseMarkdown)
+            
+            // 测试简单文本
+            const simpleTest = "# Hello\n\nThis is **bold** text."
+            const simpleResult = window.contentParser.parseMarkdown(simpleTest)
+            
+            console.log('简单测试输入:', simpleTest)
+            console.log('简单测试结果:', simpleResult)
+            
+            document.getElementById('parseResult').innerHTML = simpleResult
+            document.getElementById('htmlSource').textContent = simpleResult
+        }
+    </script>
+</body>
+</html>

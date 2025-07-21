@@ -1,0 +1,352 @@
+/* 博客详情页专用样式 - 完全匹配管理预览模式 */
+
+.blog-detail-page-wrapper {
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+.blog-detail-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  color: var(--primary-color);
+  padding: 12px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.back-button:hover {
+  background: rgba(0, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+}
+
+.blog-detail-nav h1 {
+  color: var(--primary-color);
+  font-family: 'Orbitron', monospace;
+  font-size: 20px;
+  margin: 0;
+}
+
+.blog-detail-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.blog-article {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 40px;
+  margin-bottom: 40px;
+}
+
+.blog-article-header {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.blog-article-title {
+  color: var(--primary-color);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0 0 20px 0;
+}
+
+.blog-article-meta {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.blog-article-category {
+  background: rgba(0, 255, 255, 0.1);
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.blog-article-date {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.blog-article-read-time {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.blog-article-content {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+/* 完全匹配管理预览模式的Markdown样式 */
+.markdown-content {
+  color: rgba(255, 255, 255, 0.9) !important;
+  line-height: 1.8 !important;
+  font-size: 16px !important;
+}
+
+.markdown-content * {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 标题样式 - 完全匹配管理预览 */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  color: var(--primary-color) !important;
+  margin-top: 1em !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 600 !important;
+}
+
+.markdown-content h1 {
+  font-size: 24px !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  padding-bottom: 10px !important;
+}
+
+.markdown-content h2 {
+  font-size: 20px !important;
+}
+
+.markdown-content h3 {
+  font-size: 18px !important;
+}
+
+.markdown-content h4 {
+  font-size: 16px !important;
+}
+
+.markdown-content h5 {
+  font-size: 14px !important;
+}
+
+.markdown-content h6 {
+  font-size: 12px !important;
+}
+
+/* 段落样式 */
+.markdown-content p {
+  margin: 1em 0 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  line-height: 1.8 !important;
+}
+
+/* 链接样式 */
+.markdown-content a {
+  color: var(--secondary-color) !important;
+  text-decoration: none !important;
+  transition: color 0.3s ease !important;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline !important;
+  color: var(--primary-color) !important;
+}
+
+/* 代码样式 */
+.markdown-content code {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: var(--primary-color) !important;
+  padding: 2px 4px !important;
+  border-radius: 4px !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 90% !important;
+}
+
+.markdown-content pre {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  padding: 15px !important;
+  overflow-x: auto !important;
+  margin: 1em 0 !important;
+}
+
+.markdown-content pre code {
+  background: transparent !important;
+  padding: 0 !important;
+  color: var(--text-primary) !important;
+}
+
+/* 引用样式 */
+.markdown-content blockquote {
+  border-left: 4px solid var(--primary-color) !important;
+  padding-left: 15px !important;
+  margin-left: 0 !important;
+  color: var(--text-secondary) !important;
+  font-style: italic !important;
+}
+
+/* 列表样式 */
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 20px !important;
+  margin: 1em 0 !important;
+}
+
+.markdown-content li {
+  margin: 0.5em 0 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* 图片样式 */
+.markdown-content img {
+  max-width: 100% !important;
+  border-radius: 8px !important;
+  margin: 1em 0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 表格样式 */
+.markdown-content table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1em 0 !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid var(--border-color) !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+}
+
+.markdown-content th {
+  background: rgba(0, 255, 255, 0.1) !important;
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
+}
+
+.markdown-content tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* 水平分割线 */
+.markdown-content hr {
+  border: none !important;
+  height: 1px !important;
+  background: rgba(0, 255, 255, 0.3) !important;
+  margin: 2em 0 !important;
+}
+
+/* 强调文本 */
+.markdown-content strong,
+.markdown-content b {
+  color: var(--primary-color) !important;
+  font-weight: 600 !important;
+}
+
+.markdown-content em,
+.markdown-content i {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-style: italic !important;
+}
+
+/* 删除线 */
+.markdown-content del,
+.markdown-content s {
+  color: rgba(255, 255, 255, 0.5) !important;
+  text-decoration: line-through !important;
+}
+
+/* 确保所有元素都有正确的显示属性 */
+.markdown-content * {
+  box-sizing: border-box !important;
+}
+
+.markdown-content div,
+.markdown-content span,
+.markdown-content article,
+.markdown-content section {
+  display: block !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .blog-detail-header {
+    padding: 15px 20px !important;
+  }
+  
+  .blog-detail-main {
+    padding: 20px 15px !important;
+  }
+  
+  .blog-article {
+    padding: 30px 20px !important;
+  }
+  
+  .blog-article-title {
+    font-size: 28px !important;
+  }
+  
+  .blog-article-meta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  
+  .markdown-content {
+    font-size: 15px !important;
+  }
+  
+  .markdown-content h1 {
+    font-size: 22px !important;
+  }
+  
+  .markdown-content h2 {
+    font-size: 18px !important;
+  }
+  
+  .markdown-content h3 {
+    font-size: 16px !important;
+  }
+  
+  .markdown-content table {
+    font-size: 14px !important;
+  }
+  
+  .markdown-content th,
+  .markdown-content td {
+    padding: 6px 8px !important;
+  }
+}

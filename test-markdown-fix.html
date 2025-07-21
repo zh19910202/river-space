@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown渲染修复测试</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: rgba(26, 26, 46, 0.8);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        
+        .markdown-content {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+            font-size: 16px;
+            word-wrap: break-word;
+        }
+        
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+            color: #00ffff;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .markdown-content pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+        
+        .markdown-content code {
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .markdown-content a {
+            color: #00ffff;
+            text-decoration: underline;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid #00ffff;
+            padding-left: 1em;
+            margin: 1.5em 0;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        .result-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin: 5px;
+            display: inline-block;
+        }
+        
+        .status.success { background: rgba(0, 255, 0, 0.2); color: #00ff00; }
+        .status.error { background: rgba(255, 0, 0, 0.2); color: #ff6666; }
+        .status.warning { background: rgba(255, 255, 0, 0.2); color: #ffff66; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Markdown渲染修复测试</h1>
+    
+    <div class="test-section">
+        <h2>测试内容:</h2>
+        <textarea id="markdownInput" rows="15" style="width: 100%; background: #222; color: white; padding: 10px; border: 1px solid #444; border-radius: 5px;">
+# 这是一个测试标题
+
+这是一段包含**粗体文字**和*斜体文字*的普通段落。
+
+## 代码示例
+
+```javascript
+function testFunction() {
+    console.log("Hello, World!");
+    return "这是一个测试函数";
+}
+```
+
+这里有一些`内联代码`示例。
+
+## 列表示例
+
+- 第一个列表项
+- 第二个列表项
+- 第三个列表项
+
+## 引用示例
+
+> 这是一个引用块
+> 它包含多行内容
+
+## 链接示例
+
+[这是一个测试链接](https://example.com)
+
+## 更多格式
+
+这是一段包含多种格式的文字：**粗体**、*斜体*、`代码`和[链接](https://test.com)。
+
+---
+
+这是分割线下方的内容。
+        </textarea>
+        
+        <button class="test-button" onclick="testContentParser()">测试ContentParser</button>
+        <button class="test-button" onclick="testBlogComponent()">测试BlogComponent</button>
+        <button class="test-button" onclick="runFullTest()">完整测试</button>
+        <button class="test-button" onclick="clearResults()">清除结果</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试结果:</h2>
+        <div id="testResults">等待测试...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>渲染效果:</h2>
+        <div id="renderResult" class="markdown-content result-box">
+            点击测试按钮查看渲染效果...
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>HTML源码:</h2>
+        <pre id="htmlSource" class="result-box" style="white-space: pre-wrap; font-size: 12px;">点击测试按钮查看HTML源码...</pre>
+    </div>
+
+    <script type="module">
+        let contentParser = null;
+        let blogComponent = null;
+        
+        // 添加状态显示函数
+        function addStatus(container, message, type = 'info') {
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            container.appendChild(status);
+        }
+        
+        // 初始化
+        async function initializeComponents() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>🔄 初始化组件...</h3>';
+            
+            try {
+                // 导入ContentParser
+                const { ContentParser } = await import('./src/utils/contentParser.js');
+                contentParser = new ContentParser();
+                addStatus(results, '✅ ContentParser初始化成功', 'success');
+                
+                // 导入BlogComponent
+                const { BlogComponent } = await import('./src/components/BlogComponent.js');
+                const mockContainer = document.createElement('div');
+                blogComponent = new BlogComponent(mockContainer);
+                addStatus(results, '✅ BlogComponent初始化成功', 'success');
+                
+                return true;
+            } catch (error) {
+                addStatus(results, `❌ 初始化失败: ${error.message}`, 'error');
+                console.error('初始化错误:', error);
+                return false;
+            }
+        }
+        
+        // 测试ContentParser
+        window.testContentParser = async function() {
+            const results = document.getElementById('testResults');
+            const renderResult = document.getElementById('renderResult');
+            const htmlSource = document.getElementById('htmlSource');
+            const input = document.getElementById('markdownInput').value;
+            
+            results.innerHTML = '<h3>🧪 测试ContentParser...</h3>';
+            
+            if (!contentParser) {
+                const initialized = await initializeComponents();
+                if (!initialized) return;
+            }
+            
+            try {
+                console.log('测试输入:', input);
+                
+                const startTime = performance.now();
+                const htmlResult = contentParser.parseMarkdown(input);
+                const endTime = performance.now();
+                
+                addStatus(results, `✅ ContentParser解析成功 (${(endTime - startTime).toFixed(2)}ms)`, 'success');
+                addStatus(results, `📊 输入长度: ${input.length}, 输出长度: ${htmlResult.length}`, 'info');
+                
+                // 检查HTML标签
+                const tags = ['h1', 'h2', 'p', 'strong', 'em', 'code', 'pre', 'ul', 'li', 'blockquote', 'a'];
+                const foundTags = tags.filter(tag => htmlResult.includes(`<${tag}`));
+                const missingTags = tags.filter(tag => !htmlResult.includes(`<${tag}`));
+                
+                addStatus(results, `🏷️ 找到标签: ${foundTags.join(', ')}`, 'success');
+                if (missingTags.length > 0) {
+                    addStatus(results, `⚠️ 缺失标签: ${missingTags.join(', ')}`, 'warning');
+                }
+                
+                // 检查是否有HTML转义
+                const hasEscaping = htmlResult.includes('&lt;') || htmlResult.includes('&gt;') || htmlResult.includes('&amp;');
+                if (hasEscaping) {
+                    addStatus(results, '❌ 检测到HTML转义问题', 'error');
+                } else {
+                    addStatus(results, '✅ 没有HTML转义问题', 'success');
+                }
+                
+                // 显示结果
+                renderResult.innerHTML = htmlResult;
+                htmlSource.textContent = htmlResult;
+                
+            } catch (error) {
+                addStatus(results, `❌ ContentParser测试失败: ${error.message}`, 'error');
+                console.error('ContentParser测试错误:', error);
+            }
+        };
+        
+        // 测试BlogComponent
+        window.testBlogComponent = async function() {
+            const results = document.getElementById('testResults');
+            const renderResult = document.getElementById('renderResult');
+            const htmlSource = document.getElementById('htmlSource');
+            const input = document.getElementById('markdownInput').value;
+            
+            results.innerHTML = '<h3>🧪 测试BlogComponent...</h3>';
+            
+            if (!blogComponent) {
+                const initialized = await initializeComponents();
+                if (!initialized) return;
+            }
+            
+            try {
+                // 先用ContentParser处理内容
+                const processedContent = contentParser.parseMarkdown(input);
+                addStatus(results, '✅ 内容预处理完成', 'success');
+                
+                // 创建模拟博客对象
+                const mockBlog = {
+                    id: 'test-blog-123',
+                    title: 'Markdown渲染测试文章',
+                    category: '技术',
+                    publishDate: '2025-01-20',
+                    readTime: '5分钟'
+                };
+                
+                // 创建模拟容器
+                const mockContainer = document.createElement('div');
+                mockContainer.className = 'blog-detail-content';
+                document.body.appendChild(mockContainer);
+                
+                // 调用BlogComponent的更新方法
+                blogComponent.updateDetailPageContent(mockBlog, processedContent);
+                
+                addStatus(results, '✅ BlogComponent.updateDetailPageContent调用成功', 'success');
+                
+                // 检查渲染结果
+                const articleContent = mockContainer.querySelector('.markdown-content');
+                if (articleContent) {
+                    const renderedHtml = articleContent.innerHTML;
+                    
+                    addStatus(results, `📊 渲染内容长度: ${renderedHtml.length}`, 'info');
+                    
+                    // 检查HTML标签是否正确渲染
+                    const hasProperTags = renderedHtml.includes('<h1>') && 
+                                         renderedHtml.includes('<strong>') && 
+                                         renderedHtml.includes('<code>');
+                    
+                    if (hasProperTags) {
+                        addStatus(results, '✅ HTML标签正确渲染', 'success');
+                    } else {
+                        addStatus(results, '❌ HTML标签渲染异常', 'error');
+                    }
+                    
+                    // 检查是否有转义
+                    const hasEscaping = renderedHtml.includes('&lt;') || renderedHtml.includes('&gt;');
+                    if (hasEscaping) {
+                        addStatus(results, '❌ 检测到HTML转义问题', 'error');
+                    } else {
+                        addStatus(results, '✅ 没有HTML转义问题', 'success');
+                    }
+                    
+                    renderResult.innerHTML = renderedHtml;
+                    htmlSource.textContent = renderedHtml;
+                } else {
+                    addStatus(results, '❌ 未找到.markdown-content元素', 'error');
+                }
+                
+                // 清理模拟容器
+                setTimeout(() => mockContainer.remove(), 5000);
+                
+            } catch (error) {
+                addStatus(results, `❌ BlogComponent测试失败: ${error.message}`, 'error');
+                console.error('BlogComponent测试错误:', error);
+            }
+        };
+        
+        // 完整测试
+        window.runFullTest = async function() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>🚀 运行完整测试...</h3>';
+            
+            const initialized = await initializeComponents();
+            if (!initialized) return;
+            
+            addStatus(results, '开始完整测试流程...', 'info');
+            
+            // 测试ContentParser
+            await testContentParser();
+            
+            // 等待一下再测试BlogComponent
+            setTimeout(async () => {
+                await testBlogComponent();
+                
+                // 生成测试报告
+                setTimeout(() => {
+                    const statusElements = results.querySelectorAll('.status');
+                    const successCount = results.querySelectorAll('.status.success').length;
+                    const errorCount = results.querySelectorAll('.status.error').length;
+                    const warningCount = results.querySelectorAll('.status.warning').length;
+                    
+                    const reportDiv = document.createElement('div');
+                    reportDiv.innerHTML = `
+                        <h4>📊 测试报告</h4>
+                        <div class="status success">✅ 成功: ${successCount}</div>
+                        <div class="status ${errorCount > 0 ? 'error' : 'success'}">${errorCount > 0 ? '❌' : '✅'} 错误: ${errorCount}</div>
+                        <div class="status ${warningCount > 0 ? 'warning' : 'success'}">${warningCount > 0 ? '⚠️' : '✅'} 警告: ${warningCount}</div>
+                        <div class="status ${errorCount === 0 ? 'success' : 'error'}">
+                            ${errorCount === 0 ? '🎉 所有测试通过！Markdown渲染修复成功！' : '🔧 仍需要解决一些问题'}
+                        </div>
+                    `;
+                    results.appendChild(reportDiv);
+                }, 500);
+            }, 1000);
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('testResults').innerHTML = '等待测试...';
+            document.getElementById('renderResult').innerHTML = '点击测试按钮查看渲染效果...';
+            document.getElementById('htmlSource').textContent = '点击测试按钮查看HTML源码...';
+        };
+        
+        // 页面加载时自动初始化
+        window.addEventListener('load', () => {
+            console.log('🛠️ Markdown渲染修复测试页面已加载');
+            console.log('使用说明:');
+            console.log('1. 点击"测试ContentParser"测试markdown解析');
+            console.log('2. 点击"测试BlogComponent"测试博客组件渲染');
+            console.log('3. 点击"完整测试"运行所有测试');
+        });
+    </script>
+</body>
+</html>

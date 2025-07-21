@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown渲染调试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .input-section, .output-section {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            background: #16213e;
+            color: white;
+            border: 1px solid #00ffff;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        .output {
+            min-height: 400px;
+            background: #16213e;
+            border: 1px solid #00ffff;
+            border-radius: 4px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        button {
+            background: #00ffff;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+        }
+        button:hover {
+            background: #0080ff;
+        }
+        .debug-info {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        h1 { color: #00ffff; }
+        h2 { color: #0080ff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Markdown渲染调试工具</h1>
+    <p>测试博客系统的markdown解析和渲染功能</p>
+    
+    <div>
+        <button onclick="loadSampleMarkdown()">📝 加载示例Markdown</button>
+        <button onclick="testContentParser()">🧪 测试ContentParser</button>
+        <button onclick="testBlogComponent()">📱 测试BlogComponent</button>
+        <button onclick="clearAll()">🧹 清空</button>
+    </div>
+    
+    <div class="container">
+        <div class="input-section">
+            <h2>📝 输入 (Markdown)</h2>
+            <textarea id="markdownInput" placeholder="在这里输入Markdown内容...">
+# 测试标题
+
+这是一个**粗体文本**和*斜体文本*的例子。
+
+## 二级标题
+
+这里有一个代码块：
+
+```javascript
+function hello() {
+    console.log("Hello, World!");
+}
+```
+
+### 列表测试
+
+- 项目1
+- 项目2
+- 项目3
+
+1. 有序列表1
+2. 有序列表2
+
+> 这是一个引用块
+> 包含多行内容
+
+[链接测试](https://example.com)
+
+---
+
+这是分割线上方的内容。
+            </textarea>
+        </div>
+        
+        <div class="output-section">
+            <h2>🎨 输出 (HTML)</h2>
+            <div id="htmlOutput" class="output"></div>
+        </div>
+    </div>
+    
+    <div class="debug-info" id="debugInfo">
+        📊 调试信息将显示在这里...
+    </div>
+
+    <script type="module">
+        import { BlogComponent } from './src/components/BlogComponent.js';
+        import { ContentParser } from './src/utils/contentParser.js';
+        
+        let blogComponent;
+        let contentParser;
+        
+        // 初始化
+        try {
+            contentParser = new ContentParser();
+            console.log('✅ ContentParser初始化成功');
+        } catch (error) {
+            console.error('❌ ContentParser初始化失败:', error);
+        }
+        
+        window.loadSampleMarkdown = function() {
+            const sampleMarkdown = `# 测试博客文章
+
+这是一篇**测试文章**，用来验证*markdown*渲染功能。
+
+## 功能测试
+
+### 代码块测试
+
+\`\`\`javascript
+function testFunction() {
+    console.log("这是一个测试函数");
+    return true;
+}
+\`\`\`
+
+### 列表测试
+
+**无序列表：**
+- 功能A
+- 功能B  
+- 功能C
+
+**有序列表：**
+1. 第一步
+2. 第二步
+3. 第三步
+
+### 链接和引用
+
+[访问GitHub](https://github.com)
+
+> 这是一个重要的引用
+> 包含关键信息
+
+### 格式化文本
+
+- **粗体文本**
+- *斜体文本*
+- \`内联代码\`
+- ~~删除线~~
+
+---
+
+文章结束。`;
+            
+            document.getElementById('markdownInput').value = sampleMarkdown;
+            updateDebugInfo('已加载示例Markdown内容');
+        };
+        
+        window.testContentParser = function() {
+            if (!contentParser) {
+                updateDebugInfo('❌ ContentParser未初始化');
+                return;
+            }
+            
+            const markdown = document.getElementById('markdownInput').value;
+            const startTime = performance.now();
+            
+            try {
+                const html = contentParser.parseMarkdown(markdown);
+                const endTime = performance.now();
+                
+                document.getElementById('htmlOutput').innerHTML = html;
+                updateDebugInfo(`✅ ContentParser解析成功
+📊 耗时: ${(endTime - startTime).toFixed(2)}ms
+📏 输入长度: ${markdown.length}
+📏 输出长度: ${html.length}
+🎨 HTML预览: ${html.substring(0, 200)}...`);
+                
+            } catch (error) {
+                updateDebugInfo(`❌ ContentParser解析失败: ${error.message}`);
+                console.error('ContentParser error:', error);
+            }
+        };
+        
+        window.testBlogComponent = function() {
+            const markdown = document.getElementById('markdownInput').value;
+            
+            // 模拟博客组件的内容检测逻辑
+            const hasHtmlTags = markdown.includes('<') && markdown.includes('>');
+            const hasMarkdownSyntax = /^#{1,6}\s+|^\*\*.*\*\*|\*\*.*\*\*|\`\`\`|\[.*\]\(.*\)|^\*\s+|^\d+\.\s+|^\>\s+|^\-\s+|^\+\s+|^---+$|^\*\*\*+$/m.test(markdown);
+            
+            let debugText = `🔍 BlogComponent内容分析:
+📏 内容长度: ${markdown.length}
+🎨 包含HTML标签: ${hasHtmlTags}
+📝 包含Markdown语法: ${hasMarkdownSyntax}`;
+            
+            if (!hasHtmlTags && markdown.trim()) {
+                if (hasMarkdownSyntax) {
+                    debugText += '\n⚠️ 检测为Markdown内容，使用ContentParser解析...';
+                    if (contentParser) {
+                        try {
+                            const html = contentParser.parseMarkdown(markdown);
+                            document.getElementById('htmlOutput').innerHTML = html;
+                            debugText += `\n✅ 解析成功，输出长度: ${html.length}`;
+                        } catch (error) {
+                            debugText += `\n❌ 解析失败: ${error.message}`;
+                        }
+                    } else {
+                        debugText += '\n❌ ContentParser未初始化';
+                    }
+                } else {
+                    debugText += '\n⚠️ 检测为纯文本，进行段落包装...';
+                    const paragraphs = markdown.split('\n').filter(line => line.trim()).map(line => `<p>${line.trim()}</p>`).join('');
+                    document.getElementById('htmlOutput').innerHTML = paragraphs;
+                }
+            } else {
+                debugText += '\n✅ 内容已经是HTML格式';
+                document.getElementById('htmlOutput').innerHTML = markdown;
+            }
+            
+            updateDebugInfo(debugText);
+        };
+        
+        window.clearAll = function() {
+            document.getElementById('markdownInput').value = '';
+            document.getElementById('htmlOutput').innerHTML = '';
+            updateDebugInfo('🧹 已清空所有内容');
+        };
+        
+        function updateDebugInfo(text) {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.textContent = text;
+            console.log(text);
+        }
+        
+        // 自动处理
+        document.getElementById('markdownInput').addEventListener('input', function() {
+            const markdown = this.value;
+            if (markdown.trim() && contentParser) {
+                try {
+                    const html = contentParser.parseMarkdown(markdown);
+                    document.getElementById('htmlOutput').innerHTML = html;
+                } catch (error) {
+                    updateDebugInfo(`解析错误: ${error.message}`);
+                }
+            }
+        });
+        
+        // 初始化时加载示例
+        loadSampleMarkdown();
+        testContentParser();
+    </script>
+</body>
+</html>
