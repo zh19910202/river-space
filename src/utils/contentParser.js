@@ -185,11 +185,9 @@ export class ContentParser {
       return this.parseTable(block)
       
     default:
-      // 尝试解析为段落
-      if (content.rich_text) {
-        return `<p>${this.parseRichText(content.rich_text)}</p>`
-      }
-      return ''
+      // 临时调试：输出未支持类型的原始内容
+      console.warn('未处理的block类型:', type, block)
+      return `<pre style="color: #ff6b6b; background: #222; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto;">${this.escapeHtml(JSON.stringify(block, null, 2))}</pre>`
     }
   }
 
