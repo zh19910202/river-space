@@ -71,7 +71,8 @@ class NotionBlogService {
             }
 
             const data = await response.json();
-            return this.formatBlogContent(data.results);
+            // 直接返回Notion原始block数组
+            return data.results;
         } catch (error) {
             console.error('Error fetching blog content:', error);
             throw error;

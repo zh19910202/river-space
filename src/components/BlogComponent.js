@@ -525,43 +525,17 @@ export class BlogComponent {
       // 显示加载状态
       this.showDetailPageLoading(blog)
       
-      // 加载文章内容
-      const content = await notionService.getBlogContent(blogId)
-      console.log('✅ 文章内容加载成功，长度:', content?.length || 0)
-      console.log('📄 内容类型检查:', {
-        isEmpty: !content || content.trim() === '',
-        hasHtmlTags: content && (content.includes('<') && content.includes('>')),
-        startsWithHtml: content && content.trim().startsWith('<'),
-        contentPreview: content ? content.substring(0, 100) + '...' : 'null'
-      })
-      
-      // 确保内容不为空
-      if (!content || content.trim() === '') {
-        throw new Error('获取到的内容为空')
+      // 加载文章内容（Notion block数组）
+      const blocks = await notionService.getBlogContent(blogId)
+      // 用ContentParser解析为HTML
+      if (!this.contentParser) {
+        console.log('🔄 初始化ContentParser...')
+        this.contentParser = new ContentParser()
       }
-      
-      // 使用ContentParser统一解析markdown内容
-      let processedContent = content
-      console.log('⚠️ 开始解析内容，原始内容长度:', content?.length || 0)
-      console.log('📝 原始内容预览（前500字符）:', content?.substring(0, 500) || 'empty')
-      
-      try {
-        // 统一使用ContentParser处理，避免重复配置marked
-        if (!this.contentParser) {
-          console.log('🔄 初始化ContentParser...')
-          this.contentParser = new ContentParser()
-        }
-        
-        console.log('✅ 使用ContentParser解析markdown...')
-        processedContent = this.contentParser.parseMarkdown(content || '')
-        console.log('✅ ContentParser解析完成，HTML长度:', processedContent.length)
-        console.log('🎨 解析后HTML预览（前500字符）:', processedContent?.substring(0, 500) || 'empty')
-        
-      } catch (parseError) {
-        console.error('❌ ContentParser解析失败，使用备用解析器:', parseError)
-        console.error('📄 解析失败的内容:', content?.substring(0, 200))
-        processedContent = this.parseAsMarkdownSafe(content)
-      }
+      console.log('✅ 使用ContentParser解析Notion blocks...')
+      const processedContent = this.contentParser.parseBlocks(blocks)
+      console.log('✅ ContentParser解析完成，HTML长度:', processedContent.length)
+      console.log('🎨 解析后HTML预览（前500字符）:', processedContent?.substring(0, 500) || 'empty')
       
       this.updateDetailPageContent(blog, processedContent)
     } catch (error) {
