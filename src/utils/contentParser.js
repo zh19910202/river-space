@@ -3,12 +3,9 @@
  * 将Notion的块结构转换为HTML
  */
 
-import { marked } from 'marked'
-import hljs from 'highlight.js'
-import DOMPurify from 'dompurify'
-
 export class ContentParser {
   constructor() {
+    console.log('🔧 ContentParser 初始化...')
     this.configureMarked()
   }
 
@@ -17,31 +14,29 @@ export class ContentParser {
    * @private
    */
   configureMarked() {
-    console.log('🔧 配置marked解析器...')
-    marked.setOptions({
-      highlight: (code, lang) => {
-        if (lang && hljs.getLanguage(lang)) {
-          try {
-            return hljs.highlight(code, { language: lang }).value
-          } catch (err) {
-            console.warn('Highlight.js error:', err)
-          }
-        }
-        return hljs.highlightAuto(code).value
-      },
-      langPrefix: 'hljs language-',
-      breaks: true,           // 允许换行
-      gfm: true,              // 启用GitHub风格Markdown
-      headerIds: true,        // 为标题生成ID
-      mangle: false,          // 不转义标题中的HTML
-      sanitize: false,        // 不过滤HTML标签
-      smartLists: true,       // 智能列表处理
-      smartypants: false,     // 不转换引号
-      silent: false,          // 不忽略解析错误
-      pedantic: false,        // 不严格遵循markdown规范
-      xhtml: false            // 不使用XHTML
-    })
-    console.log('✅ marked配置完成')
+    // 检查marked库是否可用（从全局变量）
+    if (typeof marked !== 'undefined') {
+      console.log('✅ 发现全局marked库，进行配置...')
+      try {
+        marked.setOptions({
+          breaks: true,           // 允许换行
+          gfm: true,              // 启用GitHub风格Markdown
+          headerIds: true,        // 为标题生成ID
+          mangle: false,          // 不转义标题中的HTML
+          sanitize: false,        // 不过滤HTML标签
+          smartLists: true,       // 智能列表处理
+          smartypants: false,     // 不转换引号
+          silent: false,          // 不忽略解析错误
+          pedantic: false,        // 不严格遵循markdown规范
+          xhtml: false            // 不使用XHTML
+        })
+        console.log('✅ marked配置完成')
+      } catch (error) {
+        console.warn('⚠️ marked配置失败，将使用基础功能:', error)
+      }
+    } else {
+      console.log('⚠️ 未发现marked库，将使用基础解析功能')
+    }
   }
 
   /**
@@ -50,38 +45,51 @@ export class ContentParser {
    * @returns {string} HTML字符串
    */
   parseBlocks(blocks) {
+    console.log('🔄 ContentParser.parseBlocks 开始解析...')
+    console.log('📊 输入块数量:', blocks?.length || 0)
+    
+    if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
+      console.log('⚠️ 没有有效的Notion块，返回空内容提示')
+      return '<p class="no-content">暂无内容</p>'
+    }
+
     const htmlParts = []
     let listItems = []
     let listType = null
 
     for (const block of blocks) {
-      const html = this.parseBlock(block)
-      
-      // 处理列表项
-      if (block.type === 'bulleted_list_item' || block.type === 'numbered_list_item') {
-        const currentListType = block.type === 'bulleted_list_item' ? 'ul' : 'ol'
+      try {
+        const html = this.parseBlock(block)
         
-        if (listType !== currentListType) {
-          // 结束之前的列表
+        // 处理列表项
+        if (block.type === 'bulleted_list_item' || block.type === 'numbered_list_item') {
+          const currentListType = block.type === 'bulleted_list_item' ? 'ul' : 'ol'
+          
+          if (listType !== currentListType) {
+            // 结束之前的列表
+            if (listItems.length > 0) {
+              htmlParts.push(`<${listType}>${listItems.join('')}</${listType}>`)
+              listItems = []
+            }
+            listType = currentListType
+          }
+          
+          listItems.push(html)
+        } else {
+          // 结束当前列表
           if (listItems.length > 0) {
             htmlParts.push(`<${listType}>${listItems.join('')}</${listType}>`)
             listItems = []
+            listType = null
           }
-          listType = currentListType
+          
+          if (html && html.trim()) {
+            htmlParts.push(html)
+          }
         }
-        
-        listItems.push(html)
-      } else {
-        // 结束当前列表
-        if (listItems.length > 0) {
-          htmlParts.push(`<${listType}>${listItems.join('')}</${listType}>`)
-          listItems = []
-          listType = null
-        }
-        
-        if (html) {
-          htmlParts.push(html)
-        }
+      } catch (error) {
+        console.warn('⚠️ 解析块时出错:', error, block)
+        // 跳过错误的块，继续处理其他块
       }
     }
 
@@ -91,30 +99,43 @@ export class ContentParser {
     }
 
     const html = htmlParts.join('\n')
+    console.log('✅ Notion块解析完成，HTML长度:', html.length)
     
-    // 使用DOMPurify清理HTML - 宽松设置以保留markdown功能
-    return DOMPurify.sanitize(html, {
-      ALLOWED_TAGS: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'p', 'br', 'span', 'div',
-        'strong', 'b', 'em', 'i', 'u', 'del', 's', 'mark',
-        'ul', 'ol', 'li',
-        'blockquote', 'pre', 'code',
-        'a', 'img',
-        'hr', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-        'details', 'summary', 'figure', 'figcaption',
-        'sub', 'sup', 'small', 'big'
-      ],
-      ALLOWED_ATTR: [
-        'class', 'id', 'style',
-        'href', 'target', 'rel',
-        'src', 'alt', 'width', 'height',
-        'loading', 'data-*', 'title',
-        'contenteditable', 'tabindex'
-      ],
-      KEEP_CONTENT: true,
-      ALLOW_DATA_ATTR: true
-    })
+    // 如果没有解析出任何内容
+    if (!html || html.trim() === '') {
+      console.log('⚠️ 解析结果为空，返回占位内容')
+      return '<p class="empty-result">内容解析为空</p>'
+    }
+    
+    // 使用基础HTML清理 - 不依赖DOMPurify
+    const sanitizedHtml = this.sanitizeHtmlBasic(html)
+    
+    console.log('✅ HTML清理完成，最终长度:', sanitizedHtml.length)
+    
+    // 确保返回有效的HTML内容
+    if (!sanitizedHtml || sanitizedHtml.trim() === '') {
+      return '<p class="empty-content">暂无内容</p>'
+    }
+    
+    return sanitizedHtml
+  }
+
+  /**
+   * 基础HTML清理方法（不依赖DOMPurify）
+   * @param {string} html - 原始HTML
+   * @returns {string} 清理后的HTML
+   * @private
+   */
+  sanitizeHtmlBasic(html) {
+    // 基础的HTML清理，保留常用标签
+    if (!html || typeof html !== 'string') return ''
+    
+    // 移除危险的script标签和事件处理器
+    return html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
+      .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/javascript:/gi, '')
   }
 
   /**
@@ -139,57 +160,82 @@ export class ContentParser {
     const { type } = block
     const content = block[type]
 
-    if (!content) return ''
-
-    switch (type) {
-    case 'paragraph':
-      return `<p>${this.parseRichText(content.rich_text)}</p>`
-      
-    case 'heading_1':
-      return `<h1>${this.parseRichText(content.rich_text)}</h1>`
-      
-    case 'heading_2':
-      return `<h2>${this.parseRichText(content.rich_text)}</h2>`
-      
-    case 'heading_3':
-      return `<h3>${this.parseRichText(content.rich_text)}</h3>`
-      
-    case 'bulleted_list_item':
-    case 'numbered_list_item':
-      return `<li>${this.parseRichText(content.rich_text)}</li>`
-      
-    case 'code':
-      const language = content.language || 'text'
-      const code = this.parseRichText(content.rich_text)
-      return `<pre><code class="hljs language-${language}">${this.escapeHtml(code)}</code></pre>`
-      
-    case 'quote':
-      return `<blockquote>${this.parseRichText(content.rich_text)}</blockquote>`
-      
-    case 'divider':
-      return '<hr>'
-      
-    case 'image':
-      return this.parseImage(content)
-      
-    case 'video':
-      return this.parseVideo(content)
-      
-    case 'callout':
-      return this.parseCallout(content)
-      
-    case 'toggle':
-      return this.parseToggle(content)
-      
-    case 'table':
-      return this.parseTable(block)
-      
-    default:
-      // 尝试解析为段落
-      if (content.rich_text) {
-        return `<p>${this.parseRichText(content.rich_text)}</p>`
-      }
+    if (!content) {
+      console.warn(`⚠️ 块 ${type} 没有内容`)
       return ''
+    }
+
+    try {
+      switch (type) {
+      case 'paragraph':
+        return `<p>${this.parseRichText(content.rich_text)}</p>`
+        
+      case 'heading_1':
+        return `<h1>${this.parseRichText(content.rich_text)}</h1>`
+        
+      case 'heading_2':
+        return `<h2>${this.parseRichText(content.rich_text)}</h2>`
+        
+      case 'heading_3':
+        return `<h3>${this.parseRichText(content.rich_text)}</h3>`
+        
+      case 'bulleted_list_item':
+      case 'numbered_list_item':
+        return `<li>${this.parseRichText(content.rich_text)}</li>`
+        
+      case 'code':
+        const language = content.language || 'text'
+        const code = this.parseRichText(content.rich_text)
+        return `<pre><code class="language-${language}">${this.escapeHtml(code)}</code></pre>`
+        
+      case 'quote':
+        return `<blockquote>${this.parseRichText(content.rich_text)}</blockquote>`
+        
+      case 'divider':
+        return '<hr>'
+        
+      case 'image':
+        return this.parseImage(content)
+        
+      case 'video':
+        return this.parseVideo(content)
+        
+      case 'callout':
+        return this.parseCallout(content)
+        
+      case 'toggle':
+        return this.parseToggle(content)
+        
+      case 'table':
+        return this.parseTable(block)
+
+      case 'to_do':
+        const checked = content.checked ? 'checked' : ''
+        const text = this.parseRichText(content.rich_text)
+        return `<div class="todo-item"><input type="checkbox" ${checked} disabled> ${text}</div>`
+
+      case 'bookmark':
+        const url = content.url
+        const caption = content.caption ? this.parseRichText(content.caption) : url
+        return `<div class="bookmark"><a href="${this.escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${caption}</a></div>`
+        
+      default:
+        console.log(`🔍 未知块类型 "${type}"，尝试解析为段落`)
+        // 尝试解析为段落
+        if (content.rich_text) {
+          const text = this.parseRichText(content.rich_text)
+          return text ? `<p>${text}</p>` : ''
+        }
+        // 如果有text属性，直接使用
+        if (content.text) {
+          return `<p>${this.escapeHtml(content.text)}</p>`
+        }
+        console.warn(`⚠️ 无法解析块类型 "${type}":`, content)
+        return ''
+      }
+    } catch (error) {
+      console.error(`❌ 解析块 ${type} 时出错:`, error, content)
+      return `<p class="parse-error">解析错误: ${type}</p>`
     }
   }
 
@@ -198,26 +244,33 @@ export class ContentParser {
    * @private
    */
   parseRichText(richText) {
-    if (!richText || !Array.isArray(richText)) return ''
+    if (!richText || !Array.isArray(richText)) {
+      return ''
+    }
     
-    return richText.map(text => {
-      let content = this.escapeHtml(text.plain_text)
-      
-      if (text.annotations) {
-        const { bold, italic, strikethrough, underline, code } = text.annotations
+    return richText.map((text, index) => {
+      try {
+        let content = this.escapeHtml(text.plain_text || text.text?.content || '')
         
-        if (code) content = `<code>${content}</code>`
-        if (bold) content = `<strong>${content}</strong>`
-        if (italic) content = `<em>${content}</em>`
-        if (strikethrough) content = `<del>${content}</del>`
-        if (underline) content = `<u>${content}</u>`
+        if (text.annotations) {
+          const { bold, italic, strikethrough, underline, code } = text.annotations
+          
+          if (code) content = `<code>${content}</code>`
+          if (bold) content = `<strong>${content}</strong>`
+          if (italic) content = `<em>${content}</em>`
+          if (strikethrough) content = `<del>${content}</del>`
+          if (underline) content = `<u>${content}</u>`
+        }
+        
+        if (text.href) {
+          content = `<a href="${this.escapeHtml(text.href)}" target="_blank" rel="noopener noreferrer">${content}</a>`
+        }
+        
+        return content
+      } catch (error) {
+        console.error(`❌ 解析富文本片段 ${index} 出错:`, error, text)
+        return this.escapeHtml(text.plain_text || text.text?.content || '')
       }
-      
-      if (text.href) {
-        content = `<a href="${this.escapeHtml(text.href)}" target="_blank" rel="noopener noreferrer">${content}</a>`
-      }
-      
-      return content
     }).join('')
   }
 

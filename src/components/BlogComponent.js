@@ -462,7 +462,7 @@ export class BlogComponent {
     blogElement.setAttribute('data-blog-id', blog.id)
     blogElement.style.animationDelay = `${index * 50}ms` // 更快的动画
 
-    // 构建封面图HTML，增强错误处理和显示效果
+    // 构建封面图HTML - 专门针对Notion图片
     const coverImageHtml = blog.coverImage ? `
       <div class="blog-cover">
         <img src="${this.escapeHtml(blog.coverImage)}" 
@@ -470,8 +470,8 @@ export class BlogComponent {
              class="blog-cover-image"
              loading="lazy"
              style="width: 100%; height: 100%; object-fit: cover; border: none; outline: none; box-shadow: none; opacity: 0; transition: opacity 0.3s ease;"
-             onload="this.style.opacity='1'; console.log('✅ 封面图加载成功:', this.src);"
-             onerror="console.log('❌ 封面图加载失败:', this.src); this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;cover-error-placeholder&quot;><div class=&quot;placeholder-icon&quot;>🖼️</div><div class=&quot;placeholder-text&quot;>封面加载失败</div></div>';">
+             onload="this.style.opacity='1'; console.log('✅ Notion封面图加载成功:', this.src);"
+             onerror="console.log('❌ Notion封面图加载失败:', this.src); this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;cover-error-placeholder&quot;><div class=&quot;placeholder-icon&quot;>🖼️</div><div class=&quot;placeholder-text&quot;>封面加载失败</div></div>'; if (window.retryImageLoad) window.retryImageLoad(this, this.src);">
       </div>
     ` : `
       <div class="blog-cover-placeholder">
@@ -567,7 +567,7 @@ export class BlogComponent {
     mainContainer.innerHTML = `
       <div class="blog-detail-page-wrapper">
         <header class="blog-detail-header">
-          <button class="back-button" onclick="blogApp.goBackToBlogList()" aria-label="返回博客列表">
+          <button class="back-button" onclick="window.blogApp?.blogComponent?.goBackToBlogList() || window.location.reload()" aria-label="返回博客列表">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
@@ -620,8 +620,8 @@ export class BlogComponent {
     const contentContainer = document.querySelector('.blog-detail-content')
     if (!contentContainer) return
 
-    console.log('✅ 正在更新详情页面内容，内容长度:', content.length)
-    console.log('📄 内容预览（前200字符）:', content.substring(0, 200))
+    console.log('✅ 正在更新详情页面内容，内容长度:', content?.length || 0)
+    console.log('📄 内容预览（前200字符）:', content?.substring(0, 200) || 'empty')
     
     // 创建编辑按钮（如果管理员已认证）
     const editButton = this.createEditButton(blog.id)
@@ -632,24 +632,53 @@ export class BlogComponent {
     const safeDate = blog.publishDate || ''
     const safeReadTime = this.escapeHtml(blog.readTime || '5分钟')
     
-    // content应该已经是解析后的HTML，直接使用
-    let htmlContent = content && content.trim() ? content : '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 60px;">📝 暂无内容</p>'
+    // 改进内容处理逻辑
+    let htmlContent
+    if (!content || content.trim() === '') {
+      console.log('⚠️ 内容为空，使用占位符')
+      htmlContent = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 60px;">📝 此文章暂无内容</p>'
+    } else if (content.includes('<p class="no-content">') || 
+               content.includes('<p class="empty-result">') || 
+               content.includes('<p class="empty-content">') ||
+               content.includes('<p class="parse-empty">')) {
+      console.log('⚠️ 内容解析失败，使用友好提示')
+      htmlContent = `
+        <div style="text-align: center; padding: 60px 20px;">
+          <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">📄 内容加载中...</h3>
+          <p style="color: rgba(255,255,255,0.6); margin-bottom: 20px;">
+            文章内容正在处理中，请稍后再试
+          </p>
+          ${blog.url ? `
+            <a href="${blog.url}" target="_blank" rel="noopener noreferrer" 
+               style="color: #00ffff; text-decoration: underline;">
+              在Notion中查看原文 →
+            </a>
+          ` : ''}
+        </div>
+      `
+    } else {
+      htmlContent = content
+    }
     
-    console.log('🔍 接收到的内容类型分析...')
-    console.log('📏 内容长度:', content?.length || 0)
-    console.log('📄 内容前200字符:', content?.substring(0, 200) || 'empty')
+    console.log('🔍 最终内容类型分析...')
+    console.log('📏 最终内容长度:', htmlContent?.length || 0)
     
-    // 检查内容是否已经是HTML格式
-    const hasHtmlTags = htmlContent.includes('<') && htmlContent.includes('>')
+    // 检查内容是否已经是HTML格式（更准确的判断）
+    const hasHtmlTags = htmlContent && (htmlContent.includes('<p>') || htmlContent.includes('<h') || 
+                         htmlContent.includes('<div') || htmlContent.includes('<span') ||
+                         htmlContent.includes('<ul') || htmlContent.includes('<ol') ||
+                         htmlContent.includes('<pre') || htmlContent.includes('<blockquote'))
     console.log('🎨 内容是否包含HTML标签:', hasHtmlTags)
     
-    if (!hasHtmlTags && content && content.trim()) {
-      console.log('⚠️ 内容不是HTML格式，可能是纯文本，进行段落包装...')
+    // 只有在确定是纯文本时才进行段落包装
+    if (!hasHtmlTags && htmlContent && htmlContent.trim() && 
+        !htmlContent.startsWith('<') && htmlContent.indexOf('<') === -1) {
+      console.log('⚠️ 内容看起来是纯文本，进行段落包装...')
       // 简单的段落包装处理纯文本
-      htmlContent = content.split('\n\n').filter(line => line.trim()).map(para => `<p>${para.trim().replace(/\n/g, '<br>')}</p>`).join('')
+      htmlContent = htmlContent.split('\n\n').filter(line => line.trim()).map(para => `<p>${para.trim().replace(/\n/g, '<br>')}</p>`).join('')
       console.log('✅ 段落包装完成')
     } else {
-      console.log('✅ 内容已经是HTML格式，直接使用')
+      console.log('✅ 内容已经是HTML格式或不需要包装，直接使用')
     }
     
     this.updateContentDisplay(contentContainer, htmlContent, blog, editButton, safeTitle, safeCategory, safeDate, safeReadTime)
@@ -758,60 +787,39 @@ export class BlogComponent {
   }
 
   /**
-   * 返回博客列表 - 修复版
+   * 返回博客列表 - 简化版本
    */
   goBackToBlogList() {
-    console.log('🔄 开始返回博客列表...')
+    console.log('🔄 返回博客列表...')
     
-    // 恢复原始页面内容
-    const mainContainer = document.querySelector('main') || document.querySelector('.main-container') || document.body
-    
-    if (window.originalPageContent) {
-      mainContainer.innerHTML = window.originalPageContent
+    // 简单的解决方案：重新加载页面
+    try {
+      // 尝试使用浏览器历史记录返回
+      if (window.history.length > 1) {
+        window.history.back()
+        return
+      }
       
-      // 清理保存的状态
-      const originalScrollPosition = window.originalScrollPosition || 0
-      delete window.originalPageContent
-      delete window.originalScrollPosition
+      // 如果没有历史记录，重新加载当前页面
+      window.location.reload()
       
-      console.log('✅ 已恢复页面内容，滚动位置:', originalScrollPosition)
-      
-      // 等待DOM更新后重新初始化
-      setTimeout(() => {
-        try {
-          // 确保blogContainer存在
-          const blogContainer = document.getElementById('blog-container')
-          if (!blogContainer) {
-            console.error('❌ blog-container 未找到，尝试创建...')
-            return
-          }
-          
-          // 重新初始化博客组件，使用现有的blogApp实例
-          if (window.blogApp && window.blogApp.blogComponent) {
-            console.log('✅ 使用现有blogApp重新加载博客')
-            window.blogApp.blogComponent.loadBlogs()
-          } else {
-            console.log('🔄 创建新的BlogComponent实例')
-            const newBlogComponent = new BlogComponent(blogContainer)
-            window.blogApp = window.blogApp || {}
-            window.blogApp.blogComponent = newBlogComponent
-            newBlogComponent.loadBlogs()
-          }
-          
-          // 恢复滚动位置
-          window.scrollTo(0, originalScrollPosition)
-          console.log('✅ 博客列表已恢复，滚动位置:', originalScrollPosition)
-          
-        } catch (error) {
-          console.error('❌ 重新初始化失败:', error)
-          // 后备方案：重新加载页面
-          window.location.href = 'blog.html'
-        }
-      }, 200)
+    } catch (error) {
+      console.error('❌ 返回博客列表失败:', error)
+      // 最后的备选方案：跳转到博客页面
+      window.location.href = window.location.pathname
+    }
+  }
+
+  /**
+   * 全局方法：返回博客列表（供HTML调用）
+   */
+  static goBackToBlogList() {
+    // 尝试找到当前的博客组件实例
+    if (window.blogApp && window.blogApp.blogComponent) {
+      window.blogApp.blogComponent.goBackToBlogList()
     } else {
-      console.log('⚠️ 无保存的页面内容，使用后备方案')
-      // 后备方案：跳转到博客页面
-      window.location.href = 'blog.html'
+      // 如果没有实例，直接重新加载页面
+      window.location.reload()
     }
   }
 
@@ -848,8 +856,8 @@ export class BlogComponent {
    * @private
    */
   updateModalContent(modal, blog, content) {
-    console.log('✅ 正在更新模态框内容，内容长度:', content.length)
-    console.log('📄 内容预览:', content.substring(0, 200) + '...')
+    console.log('✅ 正在更新模态框内容，内容长度:', content?.length || 0)
+    console.log('📄 内容预览:', content?.substring(0, 200) || 'empty')
     
     const modalBody = modal.querySelector('.blog-modal-body')
     if (!modalBody) {
@@ -878,11 +886,40 @@ export class BlogComponent {
       </div>
     `
     
-    // 验证内容不为空 - content已经是解析后的HTML，直接使用
-    const htmlContent = content && content.trim() ? content : '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">📝 暂无内容</p>'
+    // 改进内容处理逻辑（与详情页面保持一致）
+    let htmlContent
+    if (!content || content.trim() === '') {
+      console.log('⚠️ 模态框内容为空，使用占位符')
+      htmlContent = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">📝 此文章暂无内容</p>'
+    } else if (content.includes('<p class="no-content">') || 
+               content.includes('<p class="empty-result">') || 
+               content.includes('<p class="empty-content">') ||
+               content.includes('<p class="parse-empty">')) {
+      console.log('⚠️ 模态框内容解析失败，使用友好提示')
+      htmlContent = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">📝 文章内容解析中...</p>'
+    } else {
+      htmlContent = content
+    }
     
-    console.log('📄 模态框内容预览（前200字符）:', htmlContent.substring(0, 200))
-    console.log('🎨 模态框内容是否包含HTML标签:', htmlContent.includes('<') && htmlContent.includes('>'))
+    console.log('📄 模态框内容预览（前200字符）:', htmlContent?.substring(0, 200) || 'empty')
+    
+    // 检查内容是否已经是HTML格式（更准确的判断）
+    const hasHtmlTags = htmlContent && (htmlContent.includes('<p>') || htmlContent.includes('<h') || 
+                         htmlContent.includes('<div') || htmlContent.includes('<span') ||
+                         htmlContent.includes('<ul') || htmlContent.includes('<ol') ||
+                         htmlContent.includes('<pre') || htmlContent.includes('<blockquote'))
+    console.log('🎨 模态框内容是否包含HTML标签:', hasHtmlTags)
+    
+    // 只有在确定是纯文本时才进行段落包装
+    if (!hasHtmlTags && htmlContent && htmlContent.trim() && 
+        !htmlContent.startsWith('<') && htmlContent.indexOf('<') === -1) {
+      console.log('⚠️ 模态框内容看起来是纯文本，进行段落包装...')
+      // 简单的段落包装处理纯文本
+      htmlContent = htmlContent.split('\n\n').filter(line => line.trim()).map(para => `<p>${para.trim().replace(/\n/g, '<br>')}</p>`).join('')
+      console.log('✅ 模态框段落包装完成')
+    } else {
+      console.log('✅ 模态框内容已经是HTML格式或不需要包装，直接使用')
+    }
     
     // 显示标题、元信息、内容和编辑按钮
     modalBody.innerHTML = `
