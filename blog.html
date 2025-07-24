@@ -2162,53 +2162,29 @@
     <script type="module" src="src/blog.js"></script>
     <script type="module" src="src/utils/authGuard.js"></script>
     <script>
-        // 图片加载重试机制
+        // 图片加载重试机制 - 针对Notion图片
         function retryImageLoad(imgElement, originalSrc, retryCount = 0) {
-            const maxRetries = 4;
+            const maxRetries = 2; // Notion图片通常不需要太多重试
 
-            // GitHub URL转换函数
-            function convertGitHubUrl(url) {
-                // 转换 GitHub blob URL 为 raw URL
-                if (url.includes('github.com') && url.includes('/blob/')) {
-                    return url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-                }
-                // 转换 GitHub assets URL 为 raw URL
-                if (url.includes('github.com/user-attachments/assets/')) {
-                    return url.replace('github.com/user-attachments/assets/', 'raw.githubusercontent.com/user-attachments/assets/');
-                }
-                return url;
-            }
-
-            const convertedSrc = convertGitHubUrl(originalSrc);
-
-            const proxies = [
-                convertedSrc, // 转换后的GitHub raw URL
-                `/api/github-raw${convertedSrc.replace('https://raw.githubusercontent.com', '')}`, // 本地开发代理
-                `https://ghproxy.com/${convertedSrc}`, // GitHub代理
-                `https://mirror.ghproxy.com/${convertedSrc}`, // GitHub镜像
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(convertedSrc)}`, // 通用代理
-            ];
-
-            if (retryCount >= maxRetries || retryCount >= proxies.length) {
-                console.error('图片加载失败，已尝试所有代理:', originalSrc);
+            if (retryCount >= maxRetries) {
+                console.error('图片加载失败，已尝试所有重试:', originalSrc);
                 return false;
             }
 
-            const proxyUrl = proxies[retryCount];
-            console.log(`尝试代理 ${retryCount + 1}:`, proxyUrl);
+            console.log(`重试加载图片 ${retryCount + 1}:`, originalSrc);
 
             imgElement.onload = function () {
-                console.log('图片加载成功:', proxyUrl);
+                console.log('图片加载成功:', originalSrc);
             };
 
             imgElement.onerror = function () {
-                console.warn(`代理 ${retryCount + 1} 失败:`, proxyUrl);
+                console.warn(`重试 ${retryCount + 1} 失败:`, originalSrc);
                 setTimeout(() => {
                     retryImageLoad(imgElement, originalSrc, retryCount + 1);
-                }, 1000);
+                }, 1000 * (retryCount + 1)); // 递增延迟
             };
 
-            imgElement.src = proxyUrl;
+            imgElement.src = originalSrc;
             return true;
         }
 

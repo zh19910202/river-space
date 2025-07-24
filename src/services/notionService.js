@@ -789,52 +789,45 @@ export class NotionService {
 
       // 获取页面内容块
       const response = await this.apiClient.get(`/blocks/${pageId}/children`)
-      config.log(`📁 获取到 ${response.results.length} 个内容块`)
+      config.log(`📁 获取到 ${response.results?.length || 0} 个内容块`)
 
-      // 优先使用Notion块内容
+      // 打印前几个块的信息用于调试
       if (response.results && response.results.length > 0) {
-        config.log('📄 使用Notion块内容...')
-        const content = this.contentParser.parseBlocks(response.results)
-        config.log('✅ 成功解析Notion块内容，长度:', content.length)
-        
-        // 如果内容为空或太短，可能是因为内容存储在其他地方
-        if (!content || content.trim().length < 50) {
-          config.log('⚠️ Notion块内容太少，尝试其他方式获取...')
-        } else {
-          return content
-        }
+        console.log('🔍 内容块调试信息:')
+        response.results.slice(0, 3).forEach((block, i) => {
+          console.log(`  块 ${i + 1}: 类型="${block.type}", 有内容=${!!block[block.type]}`)
+        })
       }
 
-      // 作为备选，检查页面属性中的MarkdownURL字段
-      const pageResponse = await this.apiClient.get(`/pages/${pageId}`)
-      config.log('📋 页面属性获取成功，检查是否有MarkdownURL字段...')
-
-      const properties = pageResponse.properties
-      const markdownUrl = this.extractMarkdownUrl(properties)
-
-      if (markdownUrl) {
-        config.log('🔗 发现Markdown URL:', markdownUrl)
-        return await this.loadMarkdownFromUrl(markdownUrl)
-      }
-
-      // 最后检查页面内容中的文件附件
-      const markdownFile = await this.findMarkdownFile(response.results)
-
-      if (markdownFile) {
-        config.log('📄 发现markdown文件附件:', markdownFile.name)
-        return await this.loadMarkdownFile(markdownFile)
-      }
-
-      // 如果所有方法都失败，返回空内容或提示信息
+      // 如果没有内容块
       if (!response.results || response.results.length === 0) {
         config.log('⚠️ 页面没有内容块')
-        return '<p>此文章暂无内容</p>'
+        return '<div style="text-align: center; padding: 60px 20px;"><h3 style="color: rgba(255,255,255,0.8);">📝 此文章暂无内容</h3><p style="color: rgba(255,255,255,0.6);">该文章在Notion中暂时没有内容块</p></div>'
       }
 
-      // 再次尝试解析Notion块内容（即使内容很少）
-      const fallbackContent = this.contentParser.parseBlocks(response.results)
-      config.log('✅ 使用备选方案解析Notion块内容')
-      return fallbackContent || '<p>此文章暂无内容</p>'
+      // 使用ContentParser解析Notion块
+      try {
+        const content = this.contentParser.parseBlocks(response.results)
+        config.log('✅ 成功解析Notion块内容，长度:', content?.length || 0)
+        config.log('📝 解析内容预览:', content?.substring(0, 200) || 'empty')
+        
+        // 如果内容不为空且有实际内容，直接返回
+        if (content && content.trim().length > 0 && 
+            !content.includes('<p class="no-content">') &&
+            !content.includes('<p class="empty-result">')) {
+          return content
+        } else {
+          config.log('⚠️ Notion块内容解析结果为空或无效')
+          return `<div style="text-align: center; padding: 60px 20px;">
+            <h3 style="color: rgba(255,255,255,0.8);">📝 文章内容解析中</h3>
+            <p style="color: rgba(255,255,255,0.6);">检测到 ${response.results.length} 个内容块，但暂时无法显示</p>
+            <p style="color: rgba(255,255,255,0.5); font-size: 14px;">这通常是因为内容块类型不支持或格式特殊</p>
+          </div>`
+        }
+      } catch (parseError) {
+        console.error('❌ 解析Notion块失败:', parseError)
+        return '<div style="text-align: center; padding: 60px 20px; color: rgba(255,0,0,0.8);"><h3>❌ 内容解析失败</h3><p>无法解析Notion内容块</p></div>'
+      }
     } catch (error) {
       config.error('❌ 获取文章内容失败:', error)
       throw new Error(`获取文章内容失败: ${error.message}`)
@@ -1146,29 +1139,56 @@ export class NotionService {
       return []
     }
 
-    return results.map(page => {
+    console.log(`📊 格式化 ${results.length} 个Notion页面...`)
+
+    return results.map((page, index) => {
       try {
         const properties = page.properties || {}
 
-        // 增强的封面图提取，支持多种属性名
-        const coverProps = ['CoverImage', 'coverImage', 'Cover', 'cover', 'Thumbnail', 'thumbnail', 'Image', 'image']
-        let coverImage = this.extractCoverImage(page.cover)
+        console.log(`🔍 处理页面 ${index + 1}/${results.length}:`, page.id)
+        console.log('📋 页面属性键列表:', Object.keys(properties))
+        
+        // 只在第一个页面打印详细的cover信息
+        if (index === 0) {
+          console.log('🖼️ 第一个页面的详细cover信息:')
+          console.log('  - page.cover:', page.cover)
+          console.log('  - page.cover 类型:', page.cover?.type)
+          if (page.cover?.type === 'external') {
+            console.log('  - external URL:', page.cover.external?.url)
+          }
+          if (page.cover?.type === 'file') {
+            console.log('  - file URL:', page.cover.file?.url)
+          }
+        }
 
-        // 如果页面cover没有，尝试从属性中提取
+        // 增强的封面图提取 - 优先使用Notion页面封面
+        let coverImage = this.extractCoverImage(page.cover)
+        
+        // 如果页面没有设置封面，尝试从属性中提取（备选方案）
         if (!coverImage) {
+          console.log('🔍 页面未设置封面，尝试从属性中查找...')
+          const coverProps = ['CoverImage', 'coverImage', 'Cover', 'cover', 'Thumbnail', 'thumbnail', 'Image', 'image']
           for (const propName of coverProps) {
-            const propCover = this.extractFileUrl(properties[propName])
-            if (propCover) {
-              coverImage = propCover
-              break
+            if (properties[propName]) {
+              console.log(`🔍 检查属性 "${propName}":`, properties[propName])
+              const propCover = this.extractFileUrl(properties[propName])
+              if (propCover) {
+                console.log(`✅ 从属性 "${propName}" 提取到封面:`, propCover)
+                coverImage = propCover
+                break
+              }
             }
           }
         }
 
         // 确保URL是有效的
         if (coverImage) {
-          // 对于显示用途，使用代理URL
+          console.log('📸 原始封面URL:', coverImage)
+          // 对于显示用途，使用原始URL
           coverImage = this.normalizeImageUrl(coverImage, true)
+          console.log('📸 处理后封面URL:', coverImage)
+        } else {
+          console.log('❌ 未找到任何封面图片')
         }
 
         // 安全地提取所有字段，不给无标题设置默认值
@@ -1186,31 +1206,7 @@ export class NotionService {
           return null
         }
 
-        // 提取Markdown URL
-        let markdownUrl = null
-        const markdownFields = ['MarkdwonURL', 'MarkdownURL', 'markdownURL', 'markdown_url', 'MarkdownUrl', 'ContentURL', 'contentURL', 'URL', 'Link']
-        
-        for (const fieldName of markdownFields) {
-          const field = properties[fieldName]
-          if (field) {
-            // 处理URL类型字段
-            if (field.url) {
-              markdownUrl = field.url
-              break
-            }
-            // 处理富文本类型字段
-            if (field.rich_text && field.rich_text.length > 0) {
-              markdownUrl = field.rich_text[0].plain_text
-              break
-            }
-            // 处理标题类型字段
-            if (field.title && field.title.length > 0) {
-              markdownUrl = field.title[0].plain_text
-              break
-            }
-          }
-        }
-        
+        // 提取其他博客信息，不再需要MarkdownURL
         return {
           id: page.id || '',
           title: title.trim(),
@@ -1221,7 +1217,6 @@ export class NotionService {
           readTime,
           published,
           coverImage: coverImage || null,
-          markdownUrl: markdownUrl || null,
           url: page.url || '',
           lastEditedTime: page.last_edited_time || '',
           createdTime: page.created_time || ''
@@ -1305,29 +1300,43 @@ export class NotionService {
   }
 
   /**
-   * 提取封面图URL
+   * 提取封面图URL - 专门处理Notion页面封面
    * @param {Object} cover - Notion页面的cover对象
    * @returns {string} 封面图URL
    * @private
    */
   extractCoverImage(cover) {
-    if (!cover) return null
+    console.log('📸 提取封面图，cover对象:', cover)
+    
+    if (!cover) {
+      console.log('❌ 页面没有设置封面图')
+      return null
+    }
 
-    // 处理外部链接封面
+    // 处理外部链接封面（用户在Notion中设置的外部图片URL）
     if (cover.type === 'external' && cover.external?.url) {
+      console.log('✅ 找到外部链接封面:', cover.external.url)
       return cover.external.url
     }
 
-    // 处理上传的文件封面
+    // 处理上传到Notion的文件封面
     if (cover.type === 'file' && cover.file?.url) {
+      console.log('✅ 找到Notion文件封面:', cover.file.url)
       return cover.file.url
     }
 
+    // 处理其他可能的封面类型
+    if (cover.type && cover[cover.type]?.url) {
+      console.log(`✅ 找到${cover.type}类型封面:`, cover[cover.type].url)
+      return cover[cover.type].url
+    }
+
+    console.log('❌ 无法从cover对象提取URL，cover类型:', cover.type)
     return null
   }
 
   /**
-   * 提取文件URL（从属性中）
+   * 提取文件URL（从属性中）- 专门针对Notion存储的图片
    * @param {Object} property - Notion属性对象
    * @returns {string} 文件URL
    * @private
@@ -1358,35 +1367,12 @@ export class NotionService {
       url = property.rich_text[0].plain_text
     }
 
-    // 转换GitHub URL为raw URL
-    if (url) {
-      url = this.convertGitHubUrl(url)
-    }
-
+    console.log('📎 从属性提取到URL:', url)
     return url
   }
 
   /**
-   * 转换GitHub URL为raw URL
-   * @param {string} url - 原始URL
-   * @returns {string} 转换后的URL
-   * @private
-   */
-  convertGitHubUrl(url) {
-    if (!url) return url
-
-    // 转换GitHub页面URL为raw URL
-    if (url.includes('github.com') && url.includes('/blob/')) {
-      const rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
-      console.log(`转换GitHub URL: ${url} -> ${rawUrl}`)
-      return rawUrl
-    }
-
-    return url
-  }
-
-  /**
-   * 标准化图片URL，添加代理支持
+   * 标准化图片URL - 专门针对Notion图片
    * @param {string} url - 原始图片URL
    * @param {boolean} forDisplay - 是否用于显示（true）或编辑（false）
    * @returns {string} 标准化后的URL
@@ -1395,46 +1381,20 @@ export class NotionService {
   normalizeImageUrl(url, forDisplay = true) {
     if (!url) return url
     
-    // 如果是用于编辑，尽量保留原始URL
-    if (!forDisplay) {
-      // 对于Notion内部图片，仍然返回原始URL
-      if (url.includes('amazonaws.com') || url.includes('notion-static.com')) {
-        return url
-      }
-      
-      // 如果是代理URL，尝试还原为原始URL
-      if (url.includes('/api/github-raw/')) {
-        return url.replace('/api/github-raw/', 'https://raw.githubusercontent.com/')
-      }
-      
-      return url
-    }
+    console.log('🖼️ 处理图片URL:', url)
     
-    // 以下是用于显示的处理逻辑
-    
-    // 如果是GitHub图片，使用Vite代理
-    if (url.includes('raw.githubusercontent.com')) {
-      // 使用Vite开发服务器代理
-      const proxyUrl = url.replace('https://raw.githubusercontent.com/', '/api/github-raw/')
-      config.log('使用GitHub代理:', proxyUrl)
-      return proxyUrl
-    }
-
-    // 如果是GitHub页面URL，先转换为raw URL再代理
-    if (url.includes('github.com') && url.includes('/blob/')) {
-      const rawUrl = this.convertGitHubUrl(url)
-      const proxyUrl = rawUrl.replace('https://raw.githubusercontent.com/', '/api/github-raw/')
-      config.log('转换并代理GitHub URL:', proxyUrl)
-      return proxyUrl
-    }
-
-    // 如果是Notion内部图片，确保URL有效
-    if (url.includes('amazonaws.com') || url.includes('notion-static.com')) {
-      // Notion图片通常是预签名的，直接使用
+    // 对于Notion内部图片，直接返回原始URL
+    // Notion的图片URL通常是预签名的，可以直接使用
+    if (url.includes('amazonaws.com') || 
+        url.includes('notion-static.com') || 
+        url.includes('s3.us-west-2.amazonaws.com') ||
+        url.includes('prod-files-secure')) {
+      console.log('✅ Notion内部图片，直接使用:', url)
       return url
     }
 
-    // 其他图片URL直接返回
+    // 如果是外部URL（比如用户直接在Notion中设置的外部图片链接）
+    console.log('🔗 外部图片URL，直接使用:', url)
     return url
   }
 }
