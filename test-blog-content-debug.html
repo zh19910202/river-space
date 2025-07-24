@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客内容渲染调试测试</title>
+    <link rel="stylesheet" href="./src/styles/components/blog-detail.css">
+    <link rel="stylesheet" href="./src/styles/components/markdown.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --secondary-color: #0080ff;
+            --bg-dark: #0a0a0a;
+            --text-primary: #ffffff;
+            --border-color: rgba(0, 255, 255, 0.2);
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .test-title {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .input-area {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, var(--primary-color), #0080ff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .output-area {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 100px;
+            margin-top: 15px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .status.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: var(--primary-color);
+        }
+        
+        .debug-info {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ffff00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .test-data {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 博客内容渲染调试测试</h1>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试说明</h2>
+            <p>此页面用于测试博客内容渲染，特别是标题渲染问题。在控制台中可以查看详细的日志信息。</p>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试1: 标题渲染测试</h2>
+            <textarea id="titleInput" class="input-area">#### 1. **多端覆盖，灵活接入**
+
+支持微信公众号、企业微信、飞书、钉钉等主流平台，让AI助手触达企业各个沟通场景。
+
+#### 2. **智能对话，高效办公**
+
+基于大模型的自然语言理解能力，提供智能问答、文档处理、数据分析等办公助手功能。
+
+#### 3. **安全可靠，企业级保障**
+
+提供完善的安全机制和权限控制，确保企业数据安全。</textarea>
+            <button class="test-button" onclick="testTitleRendering()">测试标题渲染</button>
+            <div class="status info">点击按钮测试标题渲染效果</div>
+            <div id="titleOutput" class="output-area blog-article-content markdown-content">
+                渲染结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试2: 复杂内容测试</h2>
+            <textarea id="complexInput" class="input-area"># 标题测试
+
+这是一个段落内容。
+
+## 子标题
+
+- 列表项1
+- 列表项2
+- **粗体文本**
+- *斜体文本*
+
+### 三级标题
+
+1. 编号列表1
+2. 编号列表2
+
+代码示例：
+```javascript
+function hello() {
+    console.log("Hello World");
+}
+```
+
+[链接测试](https://example.com)</textarea>
+            <button class="test-button" onclick="testComplexRendering()">测试复杂内容渲染</button>
+            <div class="status info">点击按钮测试复杂内容渲染效果</div>
+            <div id="complexOutput" class="output-area blog-article-content markdown-content">
+                渲染结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">调试信息</h2>
+            <button class="test-button" onclick="showDebugInfo()">显示调试信息</button>
+            <div class="status info">点击按钮查看调试信息</div>
+            <div id="debugInfo" class="debug-info" style="display: none;">
+                调试信息将显示在这里...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置marked
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: false,          // 不允许强制换行，避免标题被分割
+                gfm: true,              // 启用GitHub风格Markdown
+                headerIds: true,        // 为标题生成ID
+                mangle: false,          // 不转义标题中的HTML
+                sanitize: false,        // 不过滤HTML标签
+                smartLists: true,       // 智能列表处理
+                smartypants: false,     // 不转换引号
+                silent: false,          // 不忽略解析错误
+                pedantic: false,        // 不严格遵循markdown规范
+                xhtml: false            // 不使用XHTML
+            });
+        }
+
+        function testTitleRendering() {
+            const input = document.getElementById('titleInput').value;
+            const output = document.getElementById('titleOutput');
+            
+            try {
+                console.log('📝 原始输入内容:', input);
+                
+                if (typeof marked !== 'undefined') {
+                    const html = marked.parse(input.trim());
+                    console.log('✅ Marked解析结果:', html);
+                    
+                    output.innerHTML = html;
+                    output.className = 'output-area blog-article-content markdown-content';
+                    showStatus('titleOutput', '✅ 标题渲染成功', 'success');
+                    
+                    // 验证修复效果
+                    setTimeout(() => {
+                        const h4Elements = output.querySelectorAll('h4');
+                        let isFixed = true;
+                        h4Elements.forEach((h4, index) => {
+                            const firstChild = h4.firstChild;
+                            const secondChild = h4.childNodes[1];
+                            console.log(`🔍 标题 ${index + 1} 的子元素:`, firstChild, secondChild);
+                            
+                            if (firstChild && secondChild && 
+                                firstChild.nodeType === Node.TEXT_NODE && 
+                                firstChild.textContent.trim() === '1.' &&
+                                secondChild.nodeType === Node.ELEMENT_NODE) {
+                                console.log(`✅ 标题 ${index + 1} 修复正确: "${firstChild.textContent.trim()}" 和 "${secondChild.textContent.trim()}" 在同一行`);
+                            } else {
+                                isFixed = false;
+                            }
+                        });
+                        
+                        if (isFixed) {
+                            showStatus('titleOutput', '✅ 标题渲染修复成功！数字和文本在同一行显示', 'success');
+                        } else {
+                            showStatus('titleOutput', '⚠️ 标题渲染可能仍有问题', 'error');
+                        }
+                    }, 100);
+                } else {
+                    output.innerHTML = '<p style="color: #ff6b6b;">错误: marked库未加载</p>';
+                    showStatus('titleOutput', '❌ marked库未加载', 'error');
+                }
+            } catch (error) {
+                console.error('❌ 渲染错误:', error);
+                output.innerHTML = `<p style="color: #ff6b6b;">渲染错误: ${error.message}</p>`;
+                showStatus('titleOutput', `❌ 渲染错误: ${error.message}`, 'error');
+            }
+        }
+
+        function testComplexRendering() {
+            const input = document.getElementById('complexInput').value;
+            const output = document.getElementById('complexOutput');
+            
+            try {
+                console.log('📝 原始输入内容:', input);
+                
+                if (typeof marked !== 'undefined') {
+                    const html = marked.parse(input.trim());
+                    console.log('✅ Marked解析结果:', html);
+                    
+                    output.innerHTML = html;
+                    output.className = 'output-area blog-article-content markdown-content';
+                    showStatus('complexOutput', '✅ 复杂内容渲染成功', 'success');
+                } else {
+                    output.innerHTML = '<p style="color: #ff6b6b;">错误: marked库未加载</p>';
+                    showStatus('complexOutput', '❌ marked库未加载', 'error');
+                }
+            } catch (error) {
+                console.error('❌ 渲染错误:', error);
+                output.innerHTML = `<p style="color: #ff6b6b;">渲染错误: ${error.message}</p>`;
+                showStatus('complexOutput', `❌ 渲染错误: ${error.message}`, 'error');
+            }
+        }
+
+        function showDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.style.display = 'block';
+            
+            // 模拟一些调试数据
+            const debugData = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                markedVersion: typeof marked !== 'undefined' ? marked.version || 'unknown' : 'not loaded',
+                timestamp: new Date().toISOString(),
+                testResults: {
+                    titleRendering: 'passed',
+                    complexRendering: 'passed'
+                }
+            };
+            
+            debugInfo.textContent = JSON.stringify(debugData, null, 2);
+            showStatus('debugInfo', '✅ 调试信息已显示', 'success');
+        }
+
+        function showStatus(elementId, message, type) {
+            // 移除现有的状态消息
+            const existingStatus = document.querySelector(`#${elementId}`).previousElementSibling;
+            if (existingStatus && existingStatus.className.includes('status')) {
+                existingStatus.remove();
+            }
+            
+            // 创建新的状态消息
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            
+            // 插入到输出区域前
+            const outputElement = document.getElementById(elementId);
+            outputElement.parentNode.insertBefore(status, outputElement);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 博客内容渲染调试测试页面已加载');
+            console.log('📋 测试内容：');
+            console.log('1. 标题渲染测试');
+            console.log('2. 复杂内容测试');
+            console.log('3. 调试信息显示');
+        });
+    </script>
+</body>
+</html>
