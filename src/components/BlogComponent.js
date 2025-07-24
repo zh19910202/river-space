@@ -525,17 +525,10 @@ export class BlogComponent {
       // 显示加载状态
       this.showDetailPageLoading(blog)
       
-      // 加载文章内容（Notion block数组）
-      const blocks = await notionService.getBlogContent(blogId)
-      // 用ContentParser解析为HTML
-      if (!this.contentParser) {
-        console.log('🔄 初始化ContentParser...')
-        this.contentParser = new ContentParser()
-      }
-      console.log('✅ 使用ContentParser解析Notion blocks...')
-      const processedContent = this.contentParser.parseBlocks(blocks)
-      console.log('✅ ContentParser解析完成，HTML长度:', processedContent.length)
-      console.log('🎨 解析后HTML预览（前500字符）:', processedContent?.substring(0, 500) || 'empty')
+      // 加载文章内容（已经是HTML格式）
+      const processedContent = await notionService.getBlogContent(blogId)
+      console.log('✅ 获取到已处理的文章内容，长度:', processedContent.length)
+      console.log('🎨 内容预览（前500字符）:', processedContent?.substring(0, 500) || 'empty')
       
       this.updateDetailPageContent(blog, processedContent)
     } catch (error) {

@@ -115,8 +115,8 @@
   font-size: 16px !important;
 }
 
+/* 确保markdown内容可见但不强制改变显示属性 */
 .markdown-content * {
-  display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
@@ -132,6 +132,19 @@
   margin-top: 1em !important;
   margin-bottom: 0.5em !important;
   font-weight: 600 !important;
+  display: block !important;
+  position: relative !important;
+}
+
+/* 确保标题内的内联元素保持在同一行 */
+.markdown-content h1 *,
+.markdown-content h2 *,
+.markdown-content h3 *,
+.markdown-content h4 *,
+.markdown-content h5 *,
+.markdown-content h6 * {
+  display: inline !important;
+  margin: 0 !important;
 }
 
 .markdown-content h1 {
@@ -297,7 +310,6 @@
 .markdown-content span,
 .markdown-content article,
 .markdown-content section {
-  display: block !important;
   color: rgba(255, 255, 255, 0.9) !important;
 }
 

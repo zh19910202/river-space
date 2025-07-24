@@ -19,7 +19,7 @@ export class ContentParser {
       console.log('✅ 发现全局marked库，进行配置...')
       try {
         marked.setOptions({
-          breaks: true,           // 允许换行
+          breaks: false,          // 不允许强制换行，避免标题被分割
           gfm: true,              // 启用GitHub风格Markdown
           headerIds: true,        // 为标题生成ID
           mangle: false,          // 不转义标题中的HTML
@@ -186,7 +186,23 @@ export class ContentParser {
       case 'code':
         const language = content.language || 'text'
         const code = this.parseRichText(content.rich_text)
-        return `<pre><code class="language-${language}">${this.escapeHtml(code)}</code></pre>`
+        
+        // 如果是markdown或plain text语言，且内容看起来像是博客内容，则直接解析为HTML
+        if ((language === 'markdown' || language === 'plain text' || language === 'text') && 
+            (code.includes('#') || code.includes('*') || code.includes('```') || code.includes('!['))) {
+          // 尝试解析为Markdown
+          try {
+            const parsedMarkdown = this.parseMarkdown(code)
+            return parsedMarkdown
+          } catch (markdownError) {
+            console.warn('⚠️ Markdown解析失败，使用基础解析:', markdownError)
+            // 如果Markdown解析失败，回退到代码显示
+            return `<pre><code class="language-${language}">${this.escapeHtml(code)}</code></pre>`
+          }
+        } else {
+          // 正常的代码块显示
+          return `<pre><code class="language-${language}">${this.escapeHtml(code)}</code></pre>`
+        }
         
       case 'quote':
         return `<blockquote>${this.parseRichText(content.rich_text)}</blockquote>`
