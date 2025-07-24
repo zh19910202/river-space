@@ -797,6 +797,8 @@ export class NotionService {
         response.results.slice(0, 3).forEach((block, i) => {
           console.log(`  块 ${i + 1}: 类型="${block.type}", 有内容=${!!block[block.type]}`)
         })
+        // 打印完整的响应数据用于调试
+        console.log('📄 完整的响应数据:', JSON.stringify(response, null, 2))
       }
 
       // 如果没有内容块
@@ -810,6 +812,9 @@ export class NotionService {
         const content = this.contentParser.parseBlocks(response.results)
         config.log('✅ 成功解析Notion块内容，长度:', content?.length || 0)
         config.log('📝 解析内容预览:', content?.substring(0, 200) || 'empty')
+        
+        // 打印解析后的内容数据
+        console.log('📄 解析后的内容数据:', content)
         
         // 如果内容不为空且有实际内容，直接返回
         if (content && content.trim().length > 0 && 
@@ -826,10 +831,14 @@ export class NotionService {
         }
       } catch (parseError) {
         console.error('❌ 解析Notion块失败:', parseError)
+        // 打印解析错误的详细信息
+        console.error('❌ 解析错误详情:', parseError.stack)
         return '<div style="text-align: center; padding: 60px 20px; color: rgba(255,0,0,0.8);"><h3>❌ 内容解析失败</h3><p>无法解析Notion内容块</p></div>'
       }
     } catch (error) {
       config.error('❌ 获取文章内容失败:', error)
+      // 打印获取内容错误的详细信息
+      console.error('❌ 获取文章内容错误详情:', error.stack)
       throw new Error(`获取文章内容失败: ${error.message}`)
     }
   }

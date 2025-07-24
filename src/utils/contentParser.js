@@ -47,6 +47,8 @@ export class ContentParser {
   parseBlocks(blocks) {
     console.log('🔄 ContentParser.parseBlocks 开始解析...')
     console.log('📊 输入块数量:', blocks?.length || 0)
+    // 打印输入块的详细信息
+    console.log('📄 输入块详细信息:', JSON.stringify(blocks, null, 2))
     
     if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
       console.log('⚠️ 没有有效的Notion块，返回空内容提示')
@@ -89,6 +91,8 @@ export class ContentParser {
         }
       } catch (error) {
         console.warn('⚠️ 解析块时出错:', error, block)
+        // 打印错误的详细信息
+        console.warn('⚠️ 解析块错误详情:', error.stack)
         // 跳过错误的块，继续处理其他块
       }
     }
@@ -100,6 +104,8 @@ export class ContentParser {
 
     const html = htmlParts.join('\n')
     console.log('✅ Notion块解析完成，HTML长度:', html.length)
+    // 打印解析后的HTML内容
+    console.log('📄 解析后的HTML内容:', html)
     
     // 如果没有解析出任何内容
     if (!html || html.trim() === '') {
@@ -111,6 +117,8 @@ export class ContentParser {
     const sanitizedHtml = this.sanitizeHtmlBasic(html)
     
     console.log('✅ HTML清理完成，最终长度:', sanitizedHtml.length)
+    // 打印清理后的HTML内容
+    console.log('📄 清理后的HTML内容:', sanitizedHtml)
     
     // 确保返回有效的HTML内容
     if (!sanitizedHtml || sanitizedHtml.trim() === '') {

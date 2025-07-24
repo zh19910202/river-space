@@ -515,6 +515,8 @@ export class BlogComponent {
     }
 
     console.log('✅ 显示博客详情:', { title: blog.title, id: blogId, hasCover: !!blog.coverImage })
+    // 打印博客原始数据
+    console.log('📄 博客原始数据:', JSON.stringify(blog, null, 2))
 
     // 隐藏博客列表，显示博客详情页面
     this.showBlogDetailPage(blog)
@@ -529,6 +531,9 @@ export class BlogComponent {
       const processedContent = await notionService.getBlogContent(blogId)
       console.log('✅ 获取到已处理的文章内容，长度:', processedContent.length)
       console.log('🎨 内容预览（前500字符）:', processedContent?.substring(0, 500) || 'empty')
+      
+      // 打印处理后的内容数据
+      console.log('📄 处理后的内容数据:', processedContent)
       
       this.updateDetailPageContent(blog, processedContent)
     } catch (error) {
