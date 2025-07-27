@@ -3,9 +3,9 @@
  * 处理与Notion API的所有交互
  */
 
-import { config } from '@/config'
-import { ContentParser } from '@/utils/contentParser'
-import { ApiClient } from '@/utils/apiClient'
+import { config } from '../config/index.js'
+import { ContentParser } from '../utils/contentParser.js'
+import { ApiClient } from '../utils/apiClient.js'
 
 export class NotionService {
   constructor() {
@@ -843,274 +843,12 @@ export class NotionService {
     }
   }
 
-  /**
-   * 从页面属性中提取Markdown URL
-   * @param {Object} properties - 页面属性
-   * @returns {string|null} Markdown URL
-   * @private
-   */
-  extractMarkdownUrl(properties) {
-    try {
-      // 检查不同可能的字段名（匹配实际数据库字段）
-      const markdownFields = ['MarkdwonURL', 'MarkdownURL', 'markdownURL', 'markdown_url', 'MarkdownUrl', 'ContentURL', 'contentURL']
 
-      for (const fieldName of markdownFields) {
-        const field = properties[fieldName]
-        if (field) {
-          // 处理URL类型字段
-          if (field.url) {
-            config.log(`✅ 找到Markdown URL (url类型): ${field.url}`)
-            return field.url
-          }
-          // 处理富文本类型字段
-          if (field.rich_text && field.rich_text.length > 0) {
-            const url = field.rich_text[0].plain_text
-            config.log(`✅ 找到Markdown URL (rich_text类型): ${url}`)
-            return url
-          }
-          // 处理标题类型字段
-          if (field.title && field.title.length > 0) {
-            const url = field.title[0].plain_text
-            config.log(`✅ 找到Markdown URL (title类型): ${url}`)
-            return url
-          }
-        }
-      }
 
-      config.log('🔍 未找到Markdown URL字段，检查所有属性...')
-      return null
-    } catch (error) {
-      config.error('提取Markdown URL时出错:', error)
-      return null
-    }
-  }
 
-  /**
-   * 从URL加载Markdown内容
-   * @param {string} url - Markdown文件URL
-   * @returns {Promise<string>} HTML内容
-   * @private
-   */
-  async loadMarkdownFromUrl(url) {
-    const maxRetries = 3
-    let lastError
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        config.log(`🔄 Loading markdown from URL (attempt ${attempt}/${maxRetries}): ${url}`)
 
-        let fetchUrl = url
 
-        // 转换GitHub URL为raw URL
-        if (url.includes('github.com')) {
-          // 转换GitHub页面URL为raw URL
-          if (url.includes('github.com') && url.includes('/blob/')) {
-            url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
-          }
-
-          // 优先使用Vite代理
-          const proxies = [
-            url.replace('https://raw.githubusercontent.com/', '/api/github-raw/'), // Vite代理（优先）
-            url, // 直接访问raw.githubusercontent.com
-            `https://ghproxy.com/${url}`, // GitHub代理
-            `https://mirror.ghproxy.com/${url}`, // GitHub镜像
-            `https://raw.gitmirror.com/${url.replace('https://raw.githubusercontent.com/', '')}` // 备用镜像
-          ]
-
-          // 根据尝试次数选择不同的代理
-          fetchUrl = proxies[Math.min(attempt - 1, proxies.length - 1)]
-          config.log(`📡 Using proxy: ${fetchUrl}`)
-        }
-
-        const response = await fetch(fetchUrl, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-cache',
-          headers: {
-            'Accept': 'text/markdown, text/plain, */*',
-            'User-Agent': 'River-Space-Blog/1.0'
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const markdownContent = await response.text()
-
-        // 验证内容不为空
-        if (!markdownContent.trim()) {
-          throw new Error('Empty content received')
-        }
-
-        config.log(`✅ Markdown content loaded, length: ${markdownContent.length}`)
-
-        // 使用ContentParser解析markdown为HTML
-        const htmlContent = this.contentParser.parseMarkdown(markdownContent)
-
-        config.log('✅ Successfully loaded and parsed markdown from URL')
-        return htmlContent
-
-      } catch (error) {
-        lastError = error
-        config.warn(`❌ Attempt ${attempt} failed:`, error.message)
-
-        if (attempt < maxRetries) {
-          // 指数退避延迟
-          const delay = 1000 * Math.pow(2, attempt - 1)
-          config.log(`⏳ Waiting ${delay}ms before retry...`)
-          await new Promise(resolve => setTimeout(resolve, delay))
-        }
-      }
-    }
-
-    // 所有尝试都失败，尝试获取Notion原始内容作为备选
-    config.warn('❌ All proxy attempts failed, trying Notion blocks as fallback...')
-    return await this.getNotionBlocksAsFallback(url, lastError)
-  }
-
-  /**
-   * 获取Notion块内容作为备选方案
-   * @param {string} originalUrl - 原始URL
-   * @param {Error} originalError - 原始错误
-   * @returns {Promise<string>} HTML内容
-   * @private
-   */
-  async getNotionBlocksAsFallback(originalUrl, originalError) {
-    try {
-      // 提取页面ID（从URL中）
-      const urlParts = originalUrl.split('/')
-      const fileName = urlParts[urlParts.length - 1]
-      const title = decodeURIComponent(fileName.replace('.md', '').split('-').slice(1).join(' '))
-
-      return `
-        <div class="fallback-content">
-          <h2>📄 ${title || '文章标题'}</h2>
-          <div class="error-notice">
-            <p>⚠️ 无法从GitHub加载完整内容，请 <a href="${originalUrl}" target="_blank" rel="noopener noreferrer">点击此处</a> 查看原始文章。</p>
-            <pre class="error-details">错误信息: ${originalError.message}</pre>
-          </div>
-        </div>
-      `
-    } catch (error) {
-      config.error('Fallback content generation failed:', error)
-      throw originalError // 返回原始错误
-    }
-  }
-
-  /**
-   * 查找页面中的Markdown文件
-   * @param {Array} blocks - Notion块数组
-   * @returns {Object|null} Markdown文件信息
-   * @private
-   */
-  async findMarkdownFile(blocks) {
-    for (const block of blocks) {
-      // 检查文件块
-      if (block.type === 'file') {
-        const file = block.file
-        const fileName = this.getFileName(file)
-
-        if (fileName && fileName.toLowerCase().endsWith('.md')) {
-          return {
-            url: file.file?.url || file.external?.url,
-            name: fileName,
-            type: 'markdown'
-          }
-        }
-      }
-
-      // 检查PDF块（有些情况下markdown可能被识别为PDF）
-      if (block.type === 'pdf') {
-        const file = block.pdf
-        const fileName = this.getFileName(file)
-
-        if (fileName && fileName.toLowerCase().endsWith('.md')) {
-          return {
-            url: file.file?.url || file.external?.url,
-            name: fileName,
-            type: 'markdown'
-          }
-        }
-      }
-
-      // 检查嵌入块中是否有markdown链接
-      if (block.type === 'embed') {
-        const url = block.embed.url
-        if (url && url.toLowerCase().includes('.md')) {
-          return {
-            url: url,
-            name: this.extractFileNameFromUrl(url),
-            type: 'markdown'
-          }
-        }
-      }
-    }
-
-    return null
-  }
-
-  /**
-   * 加载Markdown文件内容
-   * @param {Object} fileInfo - 文件信息
-   * @returns {Promise<string>} HTML内容
-   * @private
-   */
-  async loadMarkdownFile(fileInfo) {
-    try {
-      config.log(`Loading markdown file: ${fileInfo.name}`)
-
-      const response = await fetch(fileInfo.url)
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch markdown file: ${response.status}`)
-      }
-
-      const markdownContent = await response.text()
-
-      // 使用ContentParser解析markdown为HTML
-      const htmlContent = this.contentParser.parseMarkdown(markdownContent)
-
-      config.log('Successfully loaded and parsed markdown file')
-      return htmlContent
-
-    } catch (error) {
-      config.error('Failed to load markdown file:', error)
-      throw new Error(`加载Markdown文件失败: ${error.message}`)
-    }
-  }
-
-  /**
-   * 获取文件名
-   * @param {Object} file - 文件对象
-   * @returns {string} 文件名
-   * @private
-   */
-  getFileName(file) {
-    // 尝试从不同的属性中获取文件名
-    if (file.name) return file.name
-    if (file.file && file.file.name) return file.file.name
-    if (file.external && file.external.url) {
-      return this.extractFileNameFromUrl(file.external.url)
-    }
-    return null
-  }
-
-  /**
-   * 从URL中提取文件名
-   * @param {string} url - 文件URL
-   * @returns {string} 文件名
-   * @private
-   */
-  extractFileNameFromUrl(url) {
-    try {
-      const urlObj = new URL(url)
-      const pathname = urlObj.pathname
-      return pathname.split('/').pop() || ''
-    } catch (error) {
-      return ''
-    }
-  }
 
   /**
    * 搜索文章
@@ -1176,6 +914,8 @@ export class NotionService {
         // 如果页面没有设置封面，尝试从属性中提取（备选方案）
         if (!coverImage) {
           console.log('🔍 页面未设置封面，尝试从属性中查找...')
+          console.log('🔍 可用属性列表:', Object.keys(properties))
+          
           const coverProps = ['CoverImage', 'coverImage', 'Cover', 'cover', 'Thumbnail', 'thumbnail', 'Image', 'image']
           for (const propName of coverProps) {
             if (properties[propName]) {

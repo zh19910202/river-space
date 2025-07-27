@@ -3,9 +3,9 @@
  * 处理博客相关的UI逻辑
  */
 
-import { notionService } from '@/services/notionService'
-import { config } from '@/config'
-import { ContentParser } from '@/utils/contentParser'
+import { notionService } from '../services/notionService.js'
+import { config } from '../config/index.js'
+import { ContentParser } from '../utils/contentParser.js'
 
 export class BlogComponent {
   constructor(container) {
@@ -141,6 +141,17 @@ export class BlogComponent {
       )
 
       console.log('✅ 加载的博客总数:', this.allBlogs.length)
+      
+      // 调试：检查第一篇博客的封面图情况
+      if (this.allBlogs.length > 0) {
+        const firstBlog = this.allBlogs[0]
+        console.log('🔍 第一篇博客调试信息:', {
+          title: firstBlog.title,
+          hasCoverImage: !!firstBlog.coverImage,
+          coverImageUrl: firstBlog.coverImage,
+          coverImageLength: firstBlog.coverImage ? firstBlog.coverImage.length : 0
+        })
+      }
       
       // 初始化过滤器选项
       this.initializeFilters()
@@ -441,6 +452,9 @@ export class BlogComponent {
 
       console.log(`🎨 渲染博客 ${index + 1}/${this.blogs.length}: ${blog.title}`)
       console.log(`🖼️ 封面图: ${blog.coverImage ? '有' : '无'}`)
+      if (blog.coverImage) {
+        console.log(`🖼️ 封面图URL: ${blog.coverImage}`)
+      }
 
       const blogElement = this.createBlogElement(blog, index)
       this.container.appendChild(blogElement)
@@ -551,8 +565,14 @@ export class BlogComponent {
    * @private
    */
   showBlogDetailPage(blog) {
-    // 找到主容器
-    const mainContainer = document.querySelector('main') || document.querySelector('.main-container') || document.body
+    // 找到主容器 - 改进查找逻辑
+    const mainContainer = document.querySelector('main') || 
+                         document.querySelector('.main-container') || 
+                         document.querySelector('.container') ||
+                         document.querySelector('body > div') ||
+                         document.body
+    
+    console.log('🎯 找到的主容器:', mainContainer.tagName, mainContainer.className)
     
     // 保存原始内容（只保存一次）
     if (!window.originalPageContent) {
@@ -563,6 +583,49 @@ export class BlogComponent {
 
     // 完全替换页面内容为博客详情页
     mainContainer.innerHTML = `
+      <style>
+        .blog-detail-page-wrapper {
+          min-height: 100vh;
+          background: var(--bg-dark, #0a0a0a);
+          color: var(--text-primary, #ffffff);
+        }
+        .blog-detail-header {
+          padding: 20px;
+          border-bottom: 1px solid var(--border-color, #333);
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+        .back-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background: var(--primary-color, #00ffff);
+          color: #000;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+        .back-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+        }
+        .blog-detail-nav h1 {
+          margin: 0;
+          color: var(--primary-color, #00ffff);
+        }
+        .blog-detail-main {
+          padding: 40px 20px;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .blog-detail-content {
+          line-height: 1.8;
+        }
+      </style>
       <div class="blog-detail-page-wrapper">
         <header class="blog-detail-header">
           <button class="back-button" onclick="window.blogApp?.blogComponent?.goBackToBlogList() || window.location.reload()" aria-label="返回博客列表">
@@ -620,6 +683,9 @@ export class BlogComponent {
 
     console.log('✅ 正在更新详情页面内容，内容长度:', content?.length || 0)
     console.log('📄 内容预览（前200字符）:', content?.substring(0, 200) || 'empty')
+    console.log('🔍 内容类型检查:', typeof content)
+    console.log('🔍 是否包含HTML标签:', content && (content.includes('<') && content.includes('>')))
+    console.log('🔍 是否被包装为代码块:', content && content.includes('```markdown'))
     
     // 创建编辑按钮（如果管理员已认证）
     const editButton = this.createEditButton(blog.id)
@@ -710,10 +776,66 @@ export class BlogComponent {
     // 创建内容部分
     const contentElement = document.createElement('div')
     contentElement.className = 'blog-article-content markdown-content'
-    contentElement.style.cssText = 'color: rgba(255, 255, 255, 0.9) !important; line-height: 1.8 !important; font-size: 16px !important;'
+    contentElement.style.cssText = `
+      color: rgba(255, 255, 255, 0.9) !important; 
+      line-height: 1.8 !important; 
+      font-size: 16px !important;
+    `
     
     // 安全地设置HTML内容
     contentElement.innerHTML = htmlContent
+    
+    // 添加CSS样式来修复序号分离问题
+    const styleElement = document.createElement('style')
+    styleElement.textContent = `
+      .blog-article-content h1,
+      .blog-article-content h2,
+      .blog-article-content h3,
+      .blog-article-content h4,
+      .blog-article-content h5,
+      .blog-article-content h6 {
+        display: block !important;
+        width: 100% !important;
+      }
+      
+      .blog-article-content h1 strong,
+      .blog-article-content h2 strong,
+      .blog-article-content h3 strong,
+      .blog-article-content h4 strong,
+      .blog-article-content h5 strong,
+      .blog-article-content h6 strong {
+        display: inline !important;
+        word-break: keep-all !important;
+        white-space: normal !important;
+      }
+      
+      .blog-article-content h4 {
+        font-size: 18px !important;
+        margin: 16px 0 8px 0 !important;
+        font-weight: 600 !important;
+        line-height: 1.4 !important;
+      }
+      
+      .blog-article-content strong {
+        display: inline !important;
+        font-weight: bold !important;
+      }
+      
+      /* 确保数字序号和标题内容保持在一起 */
+      .blog-article-content h4:has(strong),
+      .blog-article-content h3:has(strong),
+      .blog-article-content h2:has(strong),
+      .blog-article-content h1:has(strong) {
+        text-indent: 0 !important;
+        padding-left: 0 !important;
+      }
+    `
+    
+    // 将样式添加到文档头部
+    if (!document.querySelector('#blog-content-fix-styles')) {
+      styleElement.id = 'blog-content-fix-styles'
+      document.head.appendChild(styleElement)
+    }
     
     // 组装文章
     articleElement.appendChild(headerElement)
@@ -991,17 +1113,6 @@ export class BlogComponent {
     // 安全地处理错误消息
     const safeErrorMessage = this.escapeHtml(errorMessage || '未知错误')
     
-    // 提取GitHub URL用于直接访问
-    let githubUrl = null
-    try {
-      const urlMatch = errorMessage.match(/https:\/\/github\.com[^\s]+\.md/)
-      if (urlMatch) {
-        githubUrl = urlMatch[0]
-      }
-    } catch (e) {
-      console.warn('提取GitHub URL失败:', e)
-    }
-    
     // 安全地获取博客URL
     const notionUrl = blog && blog.url ? blog.url : '#'
     
@@ -1015,16 +1126,6 @@ export class BlogComponent {
         </div>
         
         <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-          ${githubUrl ? `
-            <a href="${githubUrl}" target="_blank" rel="noopener noreferrer" 
-               style="background: linear-gradient(45deg, #00ffff, #0080ff); color: #000; padding: 12px 24px; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;"
-               onmouseover="this.style.transform='translateY(-2px)'" 
-               onmouseout="this.style.transform='translateY(0)'"
-            >
-              📄 查看原始文章
-            </a>
-          ` : ''}
-          
           <a href="${notionUrl}" target="_blank" rel="noopener noreferrer"
              style="background: rgba(255, 255, 255, 0.1); color: white; padding: 12px 24px; border-radius: 25px; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease;"
              onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" 
@@ -1202,9 +1303,29 @@ export class BlogComponent {
       if (trimmed.match(/^<(h[1-6]|ul|ol|blockquote|pre|hr)/)) {
         return trimmed
       }
-      // 处理单换行为br标签
-      const withBr = trimmed.replace(/\n/g, '<br>')
-      return `<p>${withBr}</p>`
+      
+      // 改进的换行处理：
+      // 1. 先处理可能的数字序号和内容的连接（如 "1.\n标题" -> "1. 标题"）
+      // 2. 处理冒号前后的连接（如 "前部分\n:" -> "前部分:"）
+      let processedContent = trimmed
+        // 修复数字序号与内容的分离（数字+点+可选空格+换行+内容）
+        .replace(/(\d+\.\s*)\n+(.)/g, '$1 $2')
+        // 修复字母序号与内容的分离（字母+点+可选空格+换行+内容）
+        .replace(/([a-zA-Z]\.\s*)\n+(.)/g, '$1 $2')
+        // 修复冒号前的分离（内容+换行+冒号）
+        .replace(/(.)\n+(:)/g, '$1$2')
+        // 修复冒号后的分离（冒号+换行+内容）
+        .replace(/(:\s*)\n+(.)/g, '$1 $2')
+        // 修复括号内容的分离
+        .replace(/(\()\n+(.)/g, '$1$2')
+        .replace(/(.)\n+(\))/g, '$1$2')
+        // 修复引号内容的分离
+        .replace(/(")\n+(.)/g, '$1$2')
+        .replace(/(.)\n+(")/g, '$1$2')
+        // 其他单换行转换为br标签（但保留已修复的内容）
+        .replace(/\n/g, '<br>')
+      
+      return `<p>${processedContent}</p>`
     }).join('\n')
     
     console.log('✅ 安全markdown解析完成')
