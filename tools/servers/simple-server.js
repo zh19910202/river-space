@@ -4,7 +4,6 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = join(__dirname, '../../'); // 项目根目录
 const PORT = 6000;
 
 const server = createServer(async (req, res) => {
@@ -18,7 +17,7 @@ const server = createServer(async (req, res) => {
       filePath += '.html';
     }
     
-    const fullPath = join(projectRoot, filePath);
+    const fullPath = join(__dirname, filePath);
     
     // 设置MIME类型
     const ext = filePath.split('.').pop();
