@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff6666; }
+        .warning { color: #ffaa00; }
+        h2 { color: #00ffff; }
+    </style>
+</head>
+<body>
+    <h1>博客页面路径测试</h1>
+    
+    <div class="test-section">
+        <h2>测试路径映射</h2>
+        <p id="pathTest">检查中...</p>
+    </div>
+
+    <div class="test-section">
+        <h2>CSS文件测试</h2>
+        <p id="cssTest">检查中...</p>
+    </div>
+
+    <div class="test-section">
+        <h2>JavaScript模块测试</h2>
+        <p id="jsTest">检查中...</p>
+    </div>
+
+    <div class="test-section">
+        <h2>建议的修复方案</h2>
+        <div id="suggestions"></div>
+    </div>
+
+    <script>
+        // 测试路径映射
+        function testPaths() {
+            const pathResults = [];
+            
+            // 测试CSS文件
+            const cssLinks = [
+                '../assets/styles.css',
+                '../../src/styles/main.css',
+                '../../src/styles/components/markdown.css'
+            ];
+            
+            cssLinks.forEach(link => {
+                fetch(link)
+                    .then(response => {
+                        if (response.ok) {
+                            pathResults.push(`✅ ${link} - 正常`);
+                        } else {
+                            pathResults.push(`❌ ${link} - HTTP ${response.status}`);
+                        }
+                    })
+                    .catch(error => {
+                        pathResults.push(`❌ ${link} - 网络错误`);
+                    })
+                    .finally(() => {
+                        document.getElementById('cssTest').innerHTML = pathResults.join('<br>');
+                    });
+            });
+        }
+
+        // 测试JavaScript模块
+        function testJS() {
+            const jsResults = [];
+            
+            // 尝试动态导入模块
+            import('../../src/blog.js')
+                .then(() => {
+                    jsResults.push('✅ blog.js 模块加载成功');
+                })
+                .catch(error => {
+                    jsResults.push(`❌ blog.js 模块加载失败: ${error.message}`);
+                })
+                .finally(() => {
+                    document.getElementById('jsTest').innerHTML = jsResults.join('<br>');
+                });
+        }
+
+        // 生成修复建议
+        function generateSuggestions() {
+            const suggestions = [
+                '1. 确保所有CSS文件路径从public/pages/blog.html出发正确指向目标文件',
+                '2. 验证JavaScript模块路径是否正确',
+                '3. 检查HTTP服务器是否正确处理模块导入',
+                '4. 确保所有静态资源都在正确的位置',
+                '5. 验证BlogComponent是否能正确初始化并渲染博客卡片'
+            ];
+            
+            document.getElementById('suggestions').innerHTML = 
+                suggestions.map(s => `<p class="warning">${s}</p>`).join('');
+        }
+
+        // 运行测试
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('pathTest').innerHTML = 
+                '<span class="success">当前页面位置: ' + window.location.pathname + '</span>';
+            
+            testPaths();
+            testJS();
+            generateSuggestions();
+        });
+    </script>
+</body>
+</html>

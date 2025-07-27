@@ -4,7 +4,7 @@
  */
 
 /* 导入现有样式文件 */
-@import url('../../styles.css');
+@import url('/public/assets/styles.css');
 
 /* 代码高亮样式 */
 @import url('highlight.js/styles/github-dark.css');
