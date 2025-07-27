@@ -25,8 +25,9 @@ export default defineConfig(({ mode }) => {
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        blog: resolve(__dirname, 'blog.html'),
-        admin: resolve(__dirname, 'admin.html')
+        pages_index: resolve(__dirname, 'public/pages/index.html'),
+        blog: resolve(__dirname, 'public/pages/blog.html'),
+        admin: resolve(__dirname, 'public/pages/admin.html')
       },
       output: {
         chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -39,7 +40,7 @@ export default defineConfig(({ mode }) => {
   // 开发服务器配置
   server: {
     port: 3000,
-    open: true,
+    open: '/public/pages/index.html',
     cors: true,
     proxy: {
       // 代理Notion API解决CORS问题
@@ -91,39 +92,6 @@ export default defineConfig(({ mode }) => {
           });
         }
       },
-      
-      // 代理GitHub raw文件解决CORS问题
-      '/api/github-raw': {
-        target: 'https://raw.githubusercontent.com',
-        changeOrigin: true,
-        secure: true,
-        rewrite: (path) => path.replace(/^\/api\/github-raw/, ''),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log(`[GitHub Proxy] ${req.method} ${req.url} -> https://raw.githubusercontent.com${proxyReq.path}`);
-          });
-          
-          proxy.on('proxyRes', (proxyRes, req, res) => {
-            console.log(`[GitHub Proxy] Response ${proxyRes.statusCode} for ${req.url}`);
-            
-            // 添加CORS头
-            proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-            proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-            proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type';
-          });
-          
-          proxy.on('error', (err, req, res) => {
-            console.error(`[GitHub Proxy] Error for ${req.url}:`, err.message);
-            if (!res.headersSent) {
-              res.writeHead(500, {
-                'Content-Type': 'text/plain',
-                'Access-Control-Allow-Origin': '*'
-              });
-              res.end('GitHub Proxy Error: ' + err.message);
-            }
-          });
-        }
-      }
     }
   },
 

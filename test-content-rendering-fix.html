@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内容渲染修复测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --bg-dark: #0a0a0a;
+            --text-primary: #ffffff;
+            --border-color: #333333;
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .test-title {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .input-area {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, var(--primary-color), #0080ff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .output-area {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 100px;
+            margin-top: 15px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .status.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: var(--primary-color);
+        }
+        
+        .fix-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .fix-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .fix-list li::before {
+            content: '✅';
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        pre {
+            margin: 0;
+            color: #ccc;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 内容渲染修复验证</h1>
+        
+        <div class="test-section">
+            <h2 class="test-title">修复内容概览</h2>
+            <ul class="fix-list">
+                <li>修复ContentParser中的Markdown解析逻辑</li>
+                <li>优化BlogComponent中的内容显示逻辑</li>
+                <li>改进HTML内容处理和纯文本包装逻辑</li>
+                <li>增强错误处理和边界情况处理</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试1: Markdown内容解析</h2>
+            <textarea id="markdownInput" class="input-area"># 标题测试
+这是一个段落内容。
+
+## 子标题
+- 列表项1
+- 列表项2
+- **粗体文本**
+- *斜体文本*
+
+代码示例：
+```javascript
+function hello() {
+    console.log("Hello World");
+}
+```
+
+[链接测试](https://example.com)</textarea>
+            <button class="test-button" onclick="testMarkdownParsing()">测试Markdown解析</button>
+            <div class="status info">输入Markdown内容，点击按钮测试解析效果</div>
+            <div id="markdownOutput" class="output-area">
+                解析结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试2: HTML内容处理</h2>
+            <textarea id="htmlInput" class="input-area"><h1>HTML标题</h1>
+<p>这是一个HTML段落内容。</p>
+<ul>
+    <li>HTML列表项1</li>
+    <li>HTML列表项2</li>
+</ul>
+<pre><code class="language-javascript">console.log('HTML代码测试');</code></pre>
+<blockquote>这是一个引用块</blockquote></textarea>
+            <button class="test-button" onclick="testHtmlProcessing()">测试HTML处理</button>
+            <div class="status info">输入HTML内容，点击按钮测试处理效果</div>
+            <div id="htmlOutput" class="output-area">
+                处理结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试3: 纯文本内容处理</h2>
+            <textarea id="textInput" class="input-area">这是纯文本内容。
+
+它应该被正确地包装成段落。
+
+每个段落之间有两个换行符。
+
+这是最后一个段落。</textarea>
+            <button class="test-button" onclick="testTextProcessing()">测试纯文本处理</button>
+            <div class="status info">输入纯文本内容，点击按钮测试包装效果</div>
+            <div id="textOutput" class="output-area">
+                包装结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试4: 边界情况处理</h2>
+            <div class="code-block">
+                <pre>// 测试空内容
+const emptyContent = '';
+
+// 测试只有空格的内容
+const whitespaceContent = '   ';
+
+// 测试特殊字符内容
+const specialContent = '&lt;script&gt;alert("xss")&lt;/script&gt;';
+
+// 测试混合内容
+const mixedContent = '# 标题\n\n段落内容\n\n&lt;p&gt;HTML段落&lt;/p&gt;';</pre>
+            </div>
+            <button class="test-button" onclick="testEdgeCases()">测试边界情况</button>
+            <div class="status info">测试各种边界情况的处理效果</div>
+            <div id="edgeOutput" class="output-area">
+                边界情况测试结果将显示在这里...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 配置marked
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,
+                gfm: true,
+                headerIds: true,
+                mangle: false,
+                sanitize: false,
+                smartLists: true,
+                smartypants: false,
+                silent: false,
+                pedantic: false,
+                xhtml: false
+            });
+        }
+
+        function testMarkdownParsing() {
+            const input = document.getElementById('markdownInput').value;
+            const output = document.getElementById('markdownOutput');
+            
+            try {
+                if (typeof marked !== 'undefined') {
+                    const html = marked.parse(input.trim());
+                    output.innerHTML = html;
+                    output.className = 'output-area';
+                    showStatus('markdownOutput', '✅ Markdown解析成功', 'success');
+                } else {
+                    output.innerHTML = '<p style="color: #ff6b6b;">错误: marked库未加载</p>';
+                    showStatus('markdownOutput', '❌ marked库未加载', 'error');
+                }
+            } catch (error) {
+                output.innerHTML = `<p style="color: #ff6b6b;">解析错误: ${error.message}</p>`;
+                showStatus('markdownOutput', `❌ 解析错误: ${error.message}`, 'error');
+            }
+        }
+
+        function testHtmlProcessing() {
+            const input = document.getElementById('htmlInput').value;
+            const output = document.getElementById('htmlOutput');
+            
+            try {
+                // 检查是否是HTML格式（更准确的判断）
+                const hasHtmlTags = input && (input.includes('<p>') || input.includes('<h') || 
+                                     input.includes('<div') || input.includes('<span') ||
+                                     input.includes('<ul') || input.includes('<ol') ||
+                                     input.includes('<pre') || input.includes('<blockquote'));
+                
+                if (hasHtmlTags) {
+                    output.innerHTML = input;
+                    output.className = 'output-area';
+                    showStatus('htmlOutput', '✅ HTML内容处理成功', 'success');
+                } else {
+                    output.innerHTML = '<p style="color: #ffaa00;">⚠️ 内容不是HTML格式，按原样显示</p>' + input;
+                    showStatus('htmlOutput', '⚠️ 内容不是HTML格式', 'warning');
+                }
+            } catch (error) {
+                output.innerHTML = `<p style="color: #ff6b6b;">处理错误: ${error.message}</p>`;
+                showStatus('htmlOutput', `❌ 处理错误: ${error.message}`, 'error');
+            }
+        }
+
+        function testTextProcessing() {
+            const input = document.getElementById('textInput').value;
+            const output = document.getElementById('textOutput');
+            
+            try {
+                // 检查是否是纯文本
+                if (!input || !input.trim()) {
+                    output.innerHTML = '<p style="color: #ffaa00; text-align: center;">📝 内容为空</p>';
+                    showStatus('textOutput', '⚠️ 内容为空', 'warning');
+                    return;
+                }
+                
+                const hasHtmlTags = input.includes('<') && input.includes('>');
+                
+                if (!hasHtmlTags && input.trim()) {
+                    // 段落包装处理
+                    const htmlContent = input.split('\n\n')
+                        .filter(line => line.trim())
+                        .map(para => `<p>${para.trim().replace(/\n/g, '<br>')}</p>`)
+                        .join('');
+                    
+                    output.innerHTML = htmlContent;
+                    output.className = 'output-area';
+                    showStatus('textOutput', '✅ 纯文本处理成功', 'success');
+                } else {
+                    output.innerHTML = '<p style="color: #ffaa00;">⚠️ 内容包含HTML标签，按原样显示</p>' + input;
+                    showStatus('textOutput', '⚠️ 内容包含HTML标签', 'warning');
+                }
+            } catch (error) {
+                output.innerHTML = `<p style="color: #ff6b6b;">处理错误: ${error.message}</p>`;
+                showStatus('textOutput', `❌ 处理错误: ${error.message}`, 'error');
+            }
+        }
+
+        function testEdgeCases() {
+            const output = document.getElementById('edgeOutput');
+            
+            try {
+                let results = [];
+                
+                // 测试空内容
+                const emptyResult = marked.parse('');
+                results.push(`空内容测试: ${emptyResult === '' ? '✅ 通过' : '❌ 失败'}`);
+                
+                // 测试只有空格的内容
+                const whitespaceResult = marked.parse('   ');
+                results.push(`空格内容测试: ${whitespaceResult.includes('p') ? '✅ 通过' : '❌ 失败'}`);
+                
+                // 测试普通内容
+                const normalResult = marked.parse('# 测试');
+                results.push(`普通内容测试: ${normalResult.includes('<h1>') ? '✅ 通过' : '❌ 失败'}`);
+                
+                output.innerHTML = results.map(r => `<p>${r}</p>`).join('');
+                output.className = 'output-area';
+                showStatus('edgeOutput', '✅ 边界情况测试完成', 'success');
+            } catch (error) {
+                output.innerHTML = `<p style="color: #ff6b6b;">测试错误: ${error.message}</p>`;
+                showStatus('edgeOutput', `❌ 测试错误: ${error.message}`, 'error');
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            // 移除现有的状态消息
+            const existingStatus = document.querySelector(`#${elementId}`).previousElementSibling;
+            if (existingStatus && existingStatus.className.includes('status')) {
+                existingStatus.remove();
+            }
+            
+            // 创建新的状态消息
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            
+            // 插入到输出区域前
+            const outputElement = document.getElementById(elementId);
+            outputElement.parentNode.insertBefore(status, outputElement);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 内容渲染修复测试页面已加载');
+            console.log('📋 测试内容：');
+            console.log('1. Markdown解析逻辑修复');
+            console.log('2. HTML内容处理优化');
+            console.log('3. 纯文本包装逻辑改进');
+            console.log('4. 边界情况处理增强');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion封面图测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 4px solid #00ffff;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 10px;
+        }
+        
+        .test-image {
+            max-width: 300px;
+            max-height: 200px;
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        
+        .success { color: #4ecdc4; }
+        .error { color: #ff6b6b; }
+        
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Notion封面图测试</h1>
+    
+    <div class="test-section">
+        <h3>测试功能</h3>
+        <button class="test-button" onclick="testNotionCovers()">测试Notion封面图获取</button>
+        <button class="test-button" onclick="clearResults()">清空结果</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>测试结果</h3>
+        <div id="testResults">点击测试按钮开始...</div>
+    </div>
+
+    <script type="module">
+        import { notionService } from './src/services/notionService.js'
+        
+        window.testNotionCovers = async () => {
+            const resultsDiv = document.getElementById('testResults')
+            resultsDiv.innerHTML = '<div style="color: #00ffff;">🔄 正在测试...</div>'
+            
+            try {
+                console.log('🔄 开始测试Notion封面图获取...')
+                
+                // 获取博客列表
+                const result = await notionService.getBlogPosts({ pageSize: 5 })
+                
+                if (!result.posts || result.posts.length === 0) {
+                    resultsDiv.innerHTML = '<div class="error">❌ 没有找到博客文章</div>'
+                    return
+                }
+                
+                let html = `<div class="success">✅ 找到 ${result.posts.length} 篇博客</div><br>`
+                
+                result.posts.forEach((blog, index) => {
+                    html += `
+                        <div style="border: 1px solid rgba(255,255,255,0.2); padding: 15px; margin: 10px 0; border-radius: 8px;">
+                            <h4>${blog.title}</h4>
+                            <p><strong>封面URL:</strong> ${blog.coverImage || '无封面'}</p>
+                            ${blog.coverImage ? `
+                                <div>
+                                    <strong>封面图片测试:</strong><br>
+                                    <img src="${blog.coverImage}" 
+                                         class="test-image" 
+                                         onload="console.log('✅ 封面 ${index+1} 加载成功:', this.src); this.style.border='2px solid green'"
+                                         onerror="console.log('❌ 封面 ${index+1} 加载失败:', this.src); this.style.border='2px solid red'; this.alt='❌ 加载失败'">
+                                </div>
+                            ` : '<p style="color: #888;">该文章没有设置封面图</p>'}
+                        </div>
+                    `
+                })
+                
+                resultsDiv.innerHTML = html
+                
+            } catch (error) {
+                console.error('❌ 测试失败:', error)
+                resultsDiv.innerHTML = `<div class="error">❌ 测试失败: ${error.message}</div>`
+            }
+        }
+        
+        window.clearResults = () => {
+            document.getElementById('testResults').innerHTML = '已清空结果'
+        }
+    </script>
+</body>
+</html>

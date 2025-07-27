@@ -204,14 +204,18 @@ class BlogApp {
         setTimeout(() => modal.classList.add('show'), 10);
 
         try {
-            // 从Notion获取文章内容
-            const content = await notionBlogService.getBlogContent(blogId);
-            
+            // 从Notion获取文章内容（block数组）
+            const blocks = await notionBlogService.getBlogContent(blogId);
+            // 用ContentParser解析为HTML
+            if (!this.contentParser) {
+                this.contentParser = new ContentParser();
+            }
+            const html = this.contentParser.parseBlocks(blocks);
             // 更新模态框内容
             const modalBody = modal.querySelector('.blog-modal-body');
             modalBody.innerHTML = `
                 <h1>${blog.title}</h1>
-                <div class="blog-content">${content}</div>
+                <div class="blog-content markdown-content">${html}</div>
             `;
         } catch (error) {
             console.error('加载文章内容失败:', error);
