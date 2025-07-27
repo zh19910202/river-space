@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复验证页面</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 400px;
+        }
+        
+        .blog-cover {
+            width: 100%;
+            height: 160px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .blog-cover-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .cover-error-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px dashed rgba(255, 0, 0, 0.3);
+        }
+        
+        .placeholder-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .placeholder-text {
+            font-size: 12px;
+        }
+        
+        .blog-title {
+            color: #00ffff;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="color: #00ffff;">修复验证页面</h1>
+    <p>这个页面用于验证博客卡片封面图错误处理是否正确，不会显示不应该存在的终端符号。</p>
+    
+    <div class="status" id="status">
+        准备测试...
+    </div>
+    
+    <button class="test-button" onclick="testValidImage()">测试有效图片</button>
+    <button class="test-button" onclick="testInvalidImage()">测试无效图片</button>
+    <button class="test-button" onclick="testNoImage()">测试无图片</button>
+    
+    <div id="test-container">
+        <!-- 测试卡片将在这里生成 -->
+    </div>
+
+    <script>
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        function createTestCard(title, imageUrl) {
+            const container = document.getElementById('test-container');
+            
+            const cardHtml = `
+                <div class="test-card">
+                    <div class="blog-cover">
+                        ${imageUrl ? `
+                            <img src="${imageUrl}" 
+                                 alt="${title}" 
+                                 class="blog-cover-image"
+                                 onload="console.log('✅ 图片加载成功:', this.src);"
+                                 onerror="console.log('❌ 图片加载失败:', this.src); this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;cover-error-placeholder&quot;><div class=&quot;placeholder-icon&quot;>🖼️</div><div class=&quot;placeholder-text&quot;>封面加载失败</div></div>';">
+                        ` : `
+                            <div class="cover-error-placeholder">
+                                <div class="placeholder-icon">📄</div>
+                                <div class="placeholder-text">暂无封面</div>
+                            </div>
+                        `}
+                    </div>
+                    <h3 class="blog-title">${title}</h3>
+                    <p>这是一个测试博客卡片，用于验证封面图处理是否正确。</p>
+                </div>
+            `;
+            
+            container.innerHTML = cardHtml;
+        }
+        
+        function testValidImage() {
+            updateStatus('测试有效图片...');
+            createTestCard('有效图片测试', 'https://via.placeholder.com/400x200/00ffff/000000?text=Valid+Image');
+            setTimeout(() => {
+                updateStatus('有效图片测试完成 - 应该显示正常的图片');
+            }, 1000);
+        }
+        
+        function testInvalidImage() {
+            updateStatus('测试无效图片...');
+            createTestCard('无效图片测试', 'https://invalid-url-that-will-definitely-fail.com/nonexistent.jpg');
+            setTimeout(() => {
+                updateStatus('无效图片测试完成 - 应该显示错误占位符，不应该有终端符号');
+            }, 2000);
+        }
+        
+        function testNoImage() {
+            updateStatus('测试无图片...');
+            createTestCard('无图片测试', null);
+            setTimeout(() => {
+                updateStatus('无图片测试完成 - 应该显示默认占位符');
+            }, 1000);
+        }
+        
+        // 页面加载完成后自动测试
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 修复验证页面已加载');
+            updateStatus('页面已加载，可以开始测试');
+        });
+    </script>
+</body>
+</html>

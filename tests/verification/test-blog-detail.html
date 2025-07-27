@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客详情测试</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/components/markdown.css">
+    <link rel="stylesheet" href="src/styles/components/blog.css">
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        .test-content {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>博客详情内容渲染测试</h1>
+        <p>以下是一个测试，验证博客详情内容是否能正常显示：</p>
+        
+        <div class="test-content markdown-content">
+            <h2>测试标题</h2>
+            <p>这是一段测试内容，用于验证博客详情渲染是否正常。</p>
+            
+            <pre><code class="hljs language-javascript">
+const testFunction = () => {
+    console.log('博客详情渲染正常！');
+};
+            </code></pre>
+            
+            <blockquote>
+                这是一个引用块，应该正常显示。
+            </blockquote>
+            
+            <ul>
+                <li>测试列表项 1</li>
+                <li>测试列表项 2</li>
+                <li>测试列表项 3</li>
+            </ul>
+            
+            <p><strong>加粗文本</strong> 和 <em>斜体文本</em> 应该正常显示。</p>
+            
+            <hr>
+            
+            <p>如果以上内容能正常显示，说明博客详情渲染功能已修复！</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客标题修复验证</title>
+    <link rel="stylesheet" href="./src/styles/components/blog-detail.css">
+    <link rel="stylesheet" href="./src/styles/components/markdown.css">
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --secondary-color: #0080ff;
+            --bg-dark: #0a0a0a;
+            --text-primary: #ffffff;
+            --border-color: rgba(0, 255, 255, 0.2);
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .status-success {
+            color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .status-error {
+            color: #ff6b6b;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: var(--primary-color); text-align: center;">🔧 博客标题修复验证</h1>
+        
+        <div class="test-section">
+            <h2 style="color: var(--primary-color);">修复内容说明</h2>
+            <p>修复了博客详情页中标题序号和标题文本分离显示的问题：</p>
+            <ul>
+                <li>移除了markdown.css中导致内联元素分行的CSS规则</li>
+                <li>增强了标题内联元素的display: inline规则优先级</li>
+                <li>添加了line-height和vertical-align属性确保元素对齐</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: var(--primary-color);">测试内容 - 博客详情页标题样式</h2>
+            <div class="blog-article-content markdown-content">
+                <h4>1. <strong>多端覆盖，灵活接入</strong></h4>
+                <p>支持微信公众号、企业微信、飞书、钉钉等主流平台，让AI助手触达企业各个沟通场景。</p>
+                
+                <h4>2. <strong>智能对话，高效办公</strong></h4>
+                <p>基于大模型的自然语言理解能力，提供智能问答、文档处理、数据分析等办公助手功能。</p>
+                
+                <h5>2.1 <em>功能特性</em></h5>
+                <p>详细的功能特性说明。</p>
+                
+                <h6>2.1.1 <strong>重要注意事项</strong></h6>
+                <p>这里是一些重要的注意事项内容。</p>
+                
+                <h3>3. <strong>安全可靠，企业级保障</strong></h3>
+                <p>提供完善的安全机制和权限控制，确保企业数据安全。</p>
+            </div>
+        </div>
+        
+        <script>
+            // 验证修复效果
+            document.addEventListener('DOMContentLoaded', function() {
+                const headers = document.querySelectorAll('.markdown-content h4, .markdown-content h5, .markdown-content h6');
+                let allFixed = true;
+                let testResults = [];
+                
+                headers.forEach((header, index) => {
+                    const headerText = header.textContent || header.innerText;
+                    const hasNumber = /^\d+(\.\d+)*\./.test(headerText.trim());
+                    const children = Array.from(header.children);
+                    
+                    // 检查是否有内联元素
+                    const hasInlineElements = children.length > 0;
+                    
+                    // 检查内联元素的display属性
+                    let inlineElementsCorrect = true;
+                    children.forEach(child => {
+                        const computedStyle = window.getComputedStyle(child);
+                        if (computedStyle.display !== 'inline') {
+                            inlineElementsCorrect = false;
+                        }
+                    });
+                    
+                    const result = {
+                        header: headerText,
+                        hasNumber,
+                        hasInlineElements,
+                        inlineElementsCorrect,
+                        fixed: hasNumber && (!hasInlineElements || inlineElementsCorrect)
+                    };
+                    
+                    testResults.push(result);
+                    
+                    if (!result.fixed) {
+                        allFixed = false;
+                    }
+                });
+                
+                // 显示测试结果
+                const statusDiv = document.createElement('div');
+                statusDiv.className = allFixed ? 'status-success' : 'status-error';
+                
+                if (allFixed) {
+                    statusDiv.innerHTML = '✅ 修复成功！所有标题的序号和文本现在都在同一行显示。';
+                } else {
+                    statusDiv.innerHTML = '❌ 仍存在问题，请检查以下标题的显示效果：<br>' + 
+                        testResults.filter(r => !r.fixed).map(r => r.header.substring(0, 50)).join('<br>');
+                }
+                
+                document.querySelector('.container').appendChild(statusDiv);
+                
+                // 输出详细测试结果到控制台
+                console.log('🔍 标题修复验证结果:', testResults);
+                console.log('📊 修复状态:', allFixed ? '成功' : '失败');
+            });
+        </script>
+    </div>
+</body>
+</html>
