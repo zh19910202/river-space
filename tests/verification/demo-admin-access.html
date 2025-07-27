@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理系统访问演示</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .method-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .method-title {
+            color: #00ffff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .demo-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .status.warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid rgba(255, 170, 0, 0.3);
+            color: #ffaa00;
+        }
+        
+        .click-area {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px dashed rgba(255, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+        
+        .auth-info {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .auth-title {
+            color: #00ff00;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .auth-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .auth-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .auth-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #00ffff; text-align: center;">🔐 博客管理系统访问演示</h1>
+        <p style="text-align: center; color: #ccc;">这个页面演示了如何访问隐藏的博客管理系统</p>
+        
+        <div class="status info" id="status">
+            准备演示管理系统访问方法...
+        </div>
+        
+        <div class="method-card">
+            <div class="method-title">方法1: 键盘密码（Konami代码）</div>
+            <p>按下经典的游戏密码序列：</p>
+            <div class="code-block">↑ ↑ ↓ ↓ ← → ← → B A</div>
+            <button class="demo-button" onclick="simulateKonamiCode()">模拟按键序列</button>
+            <p><small>💡 在实际使用时，请在博客页面按下这个序列</small></p>
+        </div>
+        
+        <div class="method-card">
+            <div class="method-title">方法2: 连续点击右下角</div>
+            <p>快速连续点击页面右下角红色区域3次：</p>
+            <button class="demo-button" onclick="simulateCornerClicks()">模拟连续点击</button>
+            <p><small>💡 右下角有一个红色虚线框，连续点击3次即可</small></p>
+        </div>
+        
+        <div class="method-card">
+            <div class="method-title">方法3: URL参数</div>
+            <p>在博客页面URL后添加参数：</p>
+            <div class="code-block">
+blog.html?admin=true<br>
+blog.html?secret=river2024
+            </div>
+            <button class="demo-button" onclick="testUrlMethod()">测试URL方法</button>
+        </div>
+        
+        <div class="method-card">
+            <div class="method-title">方法4: 控制台命令</div>
+            <p>在浏览器控制台输入：</p>
+            <div class="code-block">openAdmin()</div>
+            <button class="demo-button" onclick="testConsoleMethod()">执行控制台命令</button>
+        </div>
+        
+        <div class="method-card">
+            <div class="method-title">方法5: 直接访问</div>
+            <p>如果知道管理页面地址：</p>
+            <div class="code-block">admin.html</div>
+            <button class="demo-button" onclick="directAccess()">直接访问管理页面</button>
+        </div>
+        
+        <div class="auth-info">
+            <div class="auth-title">🔑 认证信息</div>
+            <p>访问管理系统后，可以使用以下认证信息登录：</p>
+            <ul class="auth-list">
+                <li><strong>开发环境:</strong> admin / admin123</li>
+                <li><strong>开发环境:</strong> river / river2024</li>
+                <li><strong>开发环境:</strong> zhouhuan / zh19910202</li>
+                <li><strong>GitHub Token:</strong> github / your_github_token</li>
+                <li><strong>环境变量:</strong> 自定义用户名密码</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+            <button class="demo-button" onclick="goToBlog()" style="font-size: 16px; padding: 15px 30px;">
+                🚀 前往博客页面试试
+            </button>
+        </div>
+    </div>
+    
+    <!-- 右下角点击区域 -->
+    <div class="click-area" onclick="handleCornerClick()" title="连续点击3次">
+        点击
+    </div>
+
+    <script>
+        let clickCount = 0;
+        let lastClickTime = 0;
+        let konamiSequence = [];
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+        
+        function simulateKonamiCode() {
+            updateStatus('模拟按键序列中...', 'info');
+            
+            const keys = ['↑', '↑', '↓', '↓', '←', '→', '←', '→', 'B', 'A'];
+            let index = 0;
+            
+            const interval = setInterval(() => {
+                if (index < keys.length) {
+                    updateStatus(`按键序列: ${keys.slice(0, index + 1).join(' ')}`, 'info');
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    updateStatus('✅ 键盘密码序列完成！在博客页面使用此序列可打开管理系统', 'success');
+                }
+            }, 300);
+        }
+        
+        function simulateCornerClicks() {
+            updateStatus('模拟连续点击中...', 'info');
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                count++;
+                updateStatus(`连续点击: ${count}/3`, 'info');
+                
+                if (count >= 3) {
+                    clearInterval(interval);
+                    updateStatus('✅ 连续点击完成！在博客页面右下角连续点击3次可打开管理系统', 'success');
+                }
+            }, 500);
+        }
+        
+        function testUrlMethod() {
+            updateStatus('✅ URL参数方法：在博客页面URL后添加 ?admin=true 或 ?secret=river2024', 'success');
+        }
+        
+        function testConsoleMethod() {
+            updateStatus('正在执行控制台命令...', 'info');
+            
+            // 模拟控制台命令
+            if (typeof openAdmin === 'function') {
+                openAdmin();
+            } else {
+                setTimeout(() => {
+                    updateStatus('✅ 控制台命令：在博客页面控制台输入 openAdmin() 可打开管理系统', 'success');
+                }, 1000);
+            }
+        }
+        
+        function directAccess() {
+            updateStatus('正在跳转到管理页面...', 'info');
+            setTimeout(() => {
+                window.open('admin.html', '_blank');
+                updateStatus('✅ 已打开管理页面（需要认证）', 'success');
+            }, 1000);
+        }
+        
+        function goToBlog() {
+            window.open('blog.html', '_blank');
+        }
+        
+        function handleCornerClick() {
+            const now = Date.now();
+            
+            if (now - lastClickTime < 1000) {
+                clickCount++;
+            } else {
+                clickCount = 1;
+            }
+            
+            lastClickTime = now;
+            updateStatus(`右下角点击: ${clickCount}/3`, 'info');
+            
+            if (clickCount >= 3) {
+                updateStatus('✅ 连续点击触发！这在博客页面会打开管理系统', 'success');
+                clickCount = 0;
+            }
+        }
+        
+        // 监听键盘事件
+        document.addEventListener('keydown', (e) => {
+            konamiSequence.push(e.code);
+            
+            if (konamiSequence.length > konamiCode.length) {
+                konamiSequence.shift();
+            }
+            
+            if (konamiSequence.length === konamiCode.length) {
+                const matches = konamiSequence.every((key, index) => key === konamiCode[index]);
+                if (matches) {
+                    updateStatus('🎉 Konami代码触发！这在博客页面会打开管理系统', 'success');
+                    konamiSequence = [];
+                }
+            }
+        });
+        
+        // 页面加载完成提示
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('演示页面已加载，可以尝试各种访问方法', 'info');
+        });
+        
+        // 全局函数，供控制台调用
+        window.openAdmin = function() {
+            updateStatus('🔓 管理系统访问已触发！', 'success');
+            setTimeout(() => {
+                window.open('admin.html', '_blank');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

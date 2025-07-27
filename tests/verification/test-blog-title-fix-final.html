@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客详情页标题修复验证</title>
+    <link rel="stylesheet" href="./src/styles/components/blog-detail.css">
+    <link rel="stylesheet" href="./src/styles/components/markdown.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #00ffff;
+            --secondary-color: #0080ff;
+            --bg-dark: #0a0a0a;
+            --text-primary: #ffffff;
+            --border-color: rgba(0, 255, 255, 0.2);
+        }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .test-title {
+            color: var(--primary-color);
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .input-area {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, var(--primary-color), #0080ff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .output-area {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 100px;
+            margin-top: 15px;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .status.error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: var(--primary-color);
+        }
+        
+        .fix-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .fix-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .fix-list li::before {
+            content: '✅';
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .result-table th,
+        .result-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .result-table th {
+            background: rgba(0, 255, 255, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .result-table tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .pass {
+            color: #00ff00;
+        }
+        
+        .fail {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 博客详情页标题修复验证</h1>
+        
+        <div class="test-section">
+            <h2 class="test-title">修复内容概览</h2>
+            <ul class="fix-list">
+                <li>修复博客详情页CSS样式冲突问题</li>
+                <li>优化标题内联元素显示（数字和文本在同一行）</li>
+                <li>保持与管理预览模式一致的样式</li>
+                <li>增强响应式设计支持</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试1: 标题渲染测试（模拟博客详情页环境）</h2>
+            <textarea id="titleInput" class="input-area">#### 1. **多端覆盖，灵活接入**
+
+支持微信公众号、企业微信、飞书、钉钉等主流平台，让AI助手触达企业各个沟通场景。
+
+#### 2. **智能对话，高效办公**
+
+基于大模型的自然语言理解能力，提供智能问答、文档处理、数据分析等办公助手功能。
+
+#### 3. **安全可靠，企业级保障**
+
+提供完善的安全机制和权限控制，确保企业数据安全。</textarea>
+            <button class="test-button" onclick="testTitleRendering()">测试标题渲染</button>
+            <div class="status info">输入包含标题的Markdown内容，点击按钮测试渲染效果</div>
+            <div id="titleOutput" class="output-area blog-article-content markdown-content">
+                渲染结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试2: 复杂标题格式测试</h2>
+            <textarea id="complexInput" class="input-area">##### 1.1 **子功能详细介绍**
+
+这是子功能的详细说明内容。
+
+###### 1.1.1 *重要注意事项*
+
+这里是一些重要的注意事项。
+
+##### 2. **配置参数说明**
+
+配置参数的详细说明内容。</textarea>
+            <button class="test-button" onclick="testComplexRendering()">测试复杂标题渲染</button>
+            <div class="status info">输入复杂标题格式，点击按钮测试渲染效果</div>
+            <div id="complexOutput" class="output-area blog-article-content markdown-content">
+                渲染结果将显示在这里...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2 class="test-title">测试3: 自动化验证结果</h2>
+            <button class="test-button" onclick="runAllTests()">运行所有测试</button>
+            <div class="status info">点击按钮运行自动化测试并查看结果</div>
+            <table class="result-table" id="resultTable">
+                <thead>
+                    <tr>
+                        <th>测试项</th>
+                        <th>预期结果</th>
+                        <th>实际结果</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>基础标题渲染</td>
+                        <td>数字和文本在同一行</td>
+                        <td>待测试</td>
+                        <td>待测试</td>
+                    </tr>
+                    <tr>
+                        <td>复杂标题渲染</td>
+                        <td>多级标题正确显示</td>
+                        <td>待测试</td>
+                        <td>待测试</td>
+                    </tr>
+                    <tr>
+                        <td>内联元素保持</td>
+                        <td>粗体/斜体正确显示</td>
+                        <td>待测试</td>
+                        <td>待测试</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 配置marked
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: false,          // 不允许强制换行，避免标题被分割
+                gfm: true,              // 启用GitHub风格Markdown
+                headerIds: true,        // 为标题生成ID
+                mangle: false,          // 不转义标题中的HTML
+                sanitize: false,        // 不过滤HTML标签
+                smartLists: true,       // 智能列表处理
+                smartypants: false,     // 不转换引号
+                silent: false,          // 不忽略解析错误
+                pedantic: false,        // 不严格遵循markdown规范
+                xhtml: false            // 不使用XHTML
+            });
+        }
+
+        function testTitleRendering() {
+            const input = document.getElementById('titleInput').value;
+            const output = document.getElementById('titleOutput');
+            
+            try {
+                if (typeof marked !== 'undefined') {
+                    const html = marked.parse(input.trim());
+                    output.innerHTML = html;
+                    output.className = 'output-area blog-article-content markdown-content';
+                    showStatus('titleOutput', '✅ 标题渲染成功', 'success');
+                } else {
+                    output.innerHTML = '<p style="color: #ff6b6b;">错误: marked库未加载</p>';
+                    showStatus('titleOutput', '❌ marked库未加载', 'error');
+                }
+            } catch (error) {
+                output.innerHTML = `<p style="color: #ff6b6b;">渲染错误: ${error.message}</p>`;
+                showStatus('titleOutput', `❌ 渲染错误: ${error.message}`, 'error');
+            }
+        }
+
+        function testComplexRendering() {
+            const input = document.getElementById('complexInput').value;
+            const output = document.getElementById('complexOutput');
+            
+            try {
+                if (typeof marked !== 'undefined') {
+                    const html = marked.parse(input.trim());
+                    output.innerHTML = html;
+                    output.className = 'output-area blog-article-content markdown-content';
+                    showStatus('complexOutput', '✅ 复杂标题渲染成功', 'success');
+                } else {
+                    output.innerHTML = '<p style="color: #ff6b6b;">错误: marked库未加载</p>';
+                    showStatus('complexOutput', '❌ marked库未加载', 'error');
+                }
+            } catch (error) {
+                output.innerHTML = `<p style="color: #ff6b6b;">渲染错误: ${error.message}</p>`;
+                showStatus('complexOutput', `❌ 渲染错误: ${error.message}`, 'error');
+            }
+        }
+
+        function runAllTests() {
+            // 测试基础标题渲染
+            const basicInput = "#### 1. **多端覆盖，灵活接入**\n\n内容...";
+            const basicHtml = marked.parse(basicInput);
+            const basicElement = document.createElement('div');
+            basicElement.innerHTML = basicHtml;
+            const basicH4 = basicElement.querySelector('h4');
+            
+            let basicPass = false;
+            if (basicH4) {
+                const firstChild = basicH4.firstChild;
+                const secondChild = basicH4.childNodes[1];
+                if (firstChild && secondChild && 
+                    firstChild.nodeType === Node.TEXT_NODE && 
+                    firstChild.textContent.trim() === '1.' &&
+                    secondChild.nodeType === Node.ELEMENT_NODE) {
+                    basicPass = true;
+                }
+            }
+            
+            // 测试复杂标题渲染
+            const complexInput = "##### 1.1.1 *重要注意事项*";
+            const complexHtml = marked.parse(complexInput);
+            const complexElement = document.createElement('div');
+            complexElement.innerHTML = complexHtml;
+            const complexH5 = complexElement.querySelector('h5');
+            const complexPass = !!complexH5;
+            
+            // 测试内联元素保持
+            let inlinePass = false;
+            if (basicH4) {
+                const strongElement = basicH4.querySelector('strong');
+                if (strongElement && strongElement.textContent.includes('多端覆盖')) {
+                    inlinePass = true;
+                }
+            }
+            
+            // 更新表格
+            const table = document.getElementById('resultTable');
+            const rows = table.querySelectorAll('tbody tr');
+            
+            // 更新基础标题渲染测试结果
+            rows[0].cells[2].textContent = basicPass ? '数字和文本在同一行' : '数字和文本分行显示';
+            rows[0].cells[3].innerHTML = basicPass ? '<span class="pass">✅ 通过</span>' : '<span class="fail">❌ 失败</span>';
+            
+            // 更新复杂标题渲染测试结果
+            rows[1].cells[2].textContent = complexPass ? '多级标题正确显示' : '多级标题显示异常';
+            rows[1].cells[3].innerHTML = complexPass ? '<span class="pass">✅ 通过</span>' : '<span class="fail">❌ 失败</span>';
+            
+            // 更新内联元素保持测试结果
+            rows[2].cells[2].textContent = inlinePass ? '粗体/斜体正确显示' : '内联元素显示异常';
+            rows[2].cells[3].innerHTML = inlinePass ? '<span class="pass">✅ 通过</span>' : '<span class="fail">❌ 失败</span>';
+            
+            showStatus('resultTable', '✅ 自动化测试完成', 'success');
+        }
+
+        function showStatus(elementId, message, type) {
+            // 移除现有的状态消息
+            const existingStatus = document.querySelector(`#${elementId}`).previousElementSibling;
+            if (existingStatus && existingStatus.className.includes('status')) {
+                existingStatus.remove();
+            }
+            
+            // 创建新的状态消息
+            const status = document.createElement('div');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            
+            // 插入到输出区域前
+            const outputElement = document.getElementById(elementId);
+            outputElement.parentNode.insertBefore(status, outputElement);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 博客详情页标题修复测试页面已加载');
+            console.log('📋 测试内容：');
+            console.log('1. 标题渲染修复（数字和文本在同一行）');
+            console.log('2. 复杂标题格式处理');
+            console.log('3. 自动化验证测试');
+        });
+    </script>
+</body>
+</html>

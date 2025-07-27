@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="周欢 - 智能合约开发工程师，8年工作经验，精通Golang、Solidity、DeFi等区块链技术栈">
+    <meta name="keywords" content="智能合约开发工程师,区块链工程师,Golang,Solidity,DeFi,NFT,The Graph,周欢">
+    <meta name="author" content="周欢">
+    <meta property="og:title" content="个人简历 - 周欢 | 智能合约开发工程师">
+    <meta property="og:description" content="周欢 - 智能合约开发工程师，8年工作经验，精通Golang、Solidity、DeFi等区块链技术栈">
+    <meta property="og:type" content="website">
+    <title>River Space | 智能合约开发工程师</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">River Space</span>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link active">关于我</a>
+                </li>
+                <li class="nav-item">
+                    <a href="blog.html" class="nav-link">技术博客</a>
+                </li>
+            </ul>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 背景动画 -->
+    <div class="background">
+        <div class="stars"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 关于我区域 -->
+        <section id="about" class="about-section">
+            <!-- 头部区域 -->
+            <header class="hero-section">
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <div class="terminal-buttons">
+                            <span class="btn close"></span>
+                            <span class="btn minimize"></span>
+                            <span class="btn maximize"></span>
+                        </div>
+                        <div class="terminal-title">portfolio.exe</div>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span>
+                            <span class="command" id="init-command"></span>
+                            <span class="cursor">|</span>
+                        </div>
+                        <div class="terminal-output" id="terminal-output"></div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 个人信息区域 -->
+            <section class="info-section" id="info-section">
+                <div class="info-card">
+                    <div class="card-header">
+                        <h2 class="section-title" data-text="个人信息">个人信息</h2>
+                        <div class="status-indicator">
+                            <span class="status-dot"></span>
+                            <span class="status-text">在线</span>
+                        </div>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-item" data-delay="0">
+                            <span class="label">姓名:</span>
+                            <span class="value" id="name-text"></span>
+                        </div>
+                        <div class="info-item" data-delay="500">
+                            <span class="label">职位:</span>
+                            <span class="value" id="position-text"></span>
+                        </div>
+                        <div class="info-item" data-delay="1000">
+                            <span class="label">经验:</span>
+                            <span class="value" id="experience-text"></span>
+                        </div>
+                        <div class="info-item" data-delay="1500">
+                            <span class="label">位置:</span>
+                            <span class="value" id="location-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 技能区域 -->
+            <section class="skills-section" id="skills-section">
+                <div class="skills-card">
+                    <h2 class="section-title" data-text="技术栈">技术栈</h2>
+                    <div class="skills-grid" id="skills-grid">
+                        <!-- 技能项将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 项目经验区域 -->
+            <section class="projects-section" id="projects-section">
+                <div class="projects-card">
+                    <h2 class="section-title" data-text="项目经验">项目经验</h2>
+                    <div class="projects-container" id="projects-container">
+                        <!-- 项目将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 联系方式区域 -->
+            <section class="contact-section" id="contact-section">
+                <div class="contact-card">
+                    <h2 class="section-title" data-text="联系方式">联系方式</h2>
+                    <div class="contact-grid" id="contact-grid">
+                        <!-- 联系方式将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </section>
+        </section>
+    </div>
+
+    <!-- 滚动指示器 -->
+    <div class="scroll-indicator">
+        <div class="scroll-progress"></div>
+    </div>
+
+    <script src="/src/script.js"></script>
+</body>
+</html>

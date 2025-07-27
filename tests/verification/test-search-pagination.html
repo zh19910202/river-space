@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索和分页功能测试</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .feature-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .feature-title {
+            color: #00ffff;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+            color: #00ffff;
+        }
+        
+        .demo-interface {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .demo-search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+        }
+        
+        .demo-select {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            min-width: 120px;
+        }
+        
+        .demo-pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-page-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-page-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+        
+        .demo-page-btn.active {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+            font-weight: 600;
+        }
+        
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .status-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .status-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #00ffff; text-align: center;">🔍📄 搜索和分页功能测试</h1>
+        <p style="text-align: center; color: #ccc;">验证博客系统的搜索和分页功能</p>
+        
+        <div class="feature-section">
+            <div class="feature-title">🔍 搜索功能</div>
+            <div class="status-success">
+                ✅ 已为博客系统添加强大的搜索功能
+            </div>
+            
+            <ul class="feature-list">
+                <li>支持标题搜索 - 在文章标题中查找关键词</li>
+                <li>支持内容搜索 - 在文章摘要中查找关键词</li>
+                <li>支持标签搜索 - 在文章标签中查找关键词</li>
+                <li>分类过滤 - 按文章分类筛选</li>
+                <li>标签过滤 - 按特定标签筛选</li>
+                <li>排序功能 - 按日期、标题排序</li>
+                <li>实时搜索结果统计</li>
+                <li>搜索历史保持</li>
+            </ul>
+            
+            <div class="demo-interface">
+                <div class="demo-search">
+                    <input type="text" class="demo-input" placeholder="搜索文章标题、内容..." value="React">
+                    <select class="demo-select">
+                        <option>所有分类</option>
+                        <option selected>技术</option>
+                        <option>生活</option>
+                        <option>思考</option>
+                    </select>
+                    <select class="demo-select">
+                        <option>所有标签</option>
+                        <option selected>JavaScript</option>
+                        <option>前端</option>
+                        <option>后端</option>
+                    </select>
+                    <button class="test-button">🔍 搜索</button>
+                </div>
+                <div style="color: #00ffff; font-size: 14px;">
+                    找到 8 篇文章（搜索"React"，分类"技术"，标签"JavaScript"）
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature-section">
+            <div class="feature-title">📄 分页功能</div>
+            <div class="status-success">
+                ✅ 已为博客系统添加完整的分页功能
+            </div>
+            
+            <ul class="feature-list">
+                <li>每页显示6篇文章 - 优化阅读体验</li>
+                <li>智能分页控件 - 显示页码和导航按钮</li>
+                <li>分页信息显示 - 当前页/总页数/总文章数</li>
+                <li>省略号显示 - 页码过多时智能省略</li>
+                <li>快速跳转 - 支持首页、末页快速跳转</li>
+                <li>响应式设计 - 移动端友好的分页控件</li>
+                <li>滚动定位 - 翻页后自动滚动到内容区域</li>
+                <li>URL状态保持 - 刷新页面保持当前页</li>
+            </ul>
+            
+            <div class="demo-interface">
+                <div style="text-align: center; margin-bottom: 15px; color: rgba(255,255,255,0.8);">
+                    第 2 页，共 5 页 | 共 28 篇文章
+                </div>
+                <div class="demo-pagination">
+                    <button class="demo-page-btn">← 上一页</button>
+                    <button class="demo-page-btn">1</button>
+                    <button class="demo-page-btn active">2</button>
+                    <button class="demo-page-btn">3</button>
+                    <button class="demo-page-btn">4</button>
+                    <button class="demo-page-btn">5</button>
+                    <button class="demo-page-btn">下一页 →</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="feature-section">
+            <div class="feature-title">⚙️ 管理系统增强</div>
+            <div class="status-success">
+                ✅ 管理系统也获得了搜索和分页功能
+            </div>
+            
+            <ul class="feature-list">
+                <li>文章标题搜索 - 快速定位特定文章</li>
+                <li>分类筛选 - 按分类查看文章</li>
+                <li>状态筛选 - 区分已发布和草稿文章</li>
+                <li>每页10篇文章 - 适合管理界面的密度</li>
+                <li>搜索结果统计 - 显示匹配的文章数量</li>
+                <li>一键清除搜索 - 快速重置所有过滤条件</li>
+                <li>实时过滤 - 输入即时更新结果</li>
+            </ul>
+        </div>
+        
+        <div class="feature-section">
+            <div class="feature-title">🛠️ 技术实现</div>
+            
+            <h4 style="color: #00ffff; margin-top: 20px;">前端搜索逻辑：</h4>
+            <div class="code-block">
+// 搜索过滤
+if (this.searchQuery) {
+  const query = this.searchQuery.toLowerCase()
+  filtered = filtered.filter(blog => 
+    blog.title.toLowerCase().includes(query) ||
+    blog.summary.toLowerCase().includes(query) ||
+    (blog.tags && blog.tags.some(tag => tag.toLowerCase().includes(query)))
+  )
+}
+
+// 分类过滤
+if (this.selectedCategory) {
+  filtered = filtered.filter(blog => blog.category === this.selectedCategory)
+}
+
+// 排序
+filtered.sort((a, b) => {
+  switch (sortOrder) {
+    case 'date-desc':
+      return new Date(b.publishDate) - new Date(a.publishDate)
+    case 'title-asc':
+      return a.title.localeCompare(b.title)
+    // ... 其他排序选项
+  }
+})
+            </div>
+            
+            <h4 style="color: #00ffff; margin-top: 20px;">分页计算：</h4>
+            <div class="code-block">
+// 分页处理
+const pageSize = 6
+const totalPages = Math.ceil(this.filteredBlogs.length / pageSize)
+const startIndex = (this.currentPage - 1) * pageSize
+const endIndex = startIndex + pageSize
+const currentPageBlogs = this.filteredBlogs.slice(startIndex, endIndex)
+
+// 渲染当前页
+this.blogs = currentPageBlogs
+this.renderBlogs()
+            </div>
+        </div>
+        
+        <div class="feature-section">
+            <div class="feature-title">🧪 测试步骤</div>
+            
+            <div class="status-info">
+                请按照以下步骤测试新功能：
+            </div>
+            
+            <h4 style="color: #00ffff; margin-top: 20px;">博客页面测试：</h4>
+            <ol style="color: #ccc;">
+                <li>访问博客页面 (blog.html)</li>
+                <li>查看页面顶部的搜索和过滤区域</li>
+                <li>尝试在搜索框中输入关键词</li>
+                <li>使用分类和标签下拉菜单进行过滤</li>
+                <li>查看页面底部的分页控件</li>
+                <li>点击不同页码测试分页功能</li>
+                <li>观察搜索结果统计信息</li>
+            </ol>
+            
+            <h4 style="color: #00ffff; margin-top: 20px;">管理系统测试：</h4>
+            <ol style="color: #ccc;">
+                <li>使用隐藏入口访问管理系统</li>
+                <li>登录管理员账户</li>
+                <li>在文章列表页面查看搜索界面</li>
+                <li>测试文章标题搜索功能</li>
+                <li>使用分类和状态筛选</li>
+                <li>验证分页功能正常工作</li>
+                <li>测试清除搜索功能</li>
+            </ol>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="test-button" onclick="testBlogPage()">🚀 测试博客页面</button>
+                <button class="test-button" onclick="testAdminSystem()">⚙️ 测试管理系统</button>
+            </div>
+        </div>
+        
+        <div class="feature-section">
+            <div class="feature-title">📱 响应式设计</div>
+            
+            <ul class="feature-list">
+                <li>移动端搜索界面 - 垂直布局，触摸友好</li>
+                <li>分页控件适配 - 小屏幕下优化显示</li>
+                <li>过滤器响应式 - 自动换行和调整</li>
+                <li>触摸优化 - 按钮大小适合手指点击</li>
+            </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+            <div class="status-success">
+                🎉 搜索和分页功能已完成！现在可以轻松管理和浏览大量文章了
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testBlogPage() {
+            window.open('blog.html', '_blank');
+            alert('请在博客页面测试搜索和分页功能：\n1. 使用顶部搜索框搜索文章\n2. 使用分类和标签过滤\n3. 测试底部分页控件');
+        }
+        
+        function testAdminSystem() {
+            window.open('demo-admin-access.html', '_blank');
+            alert('请通过隐藏入口访问管理系统，然后测试：\n1. 文章列表的搜索功能\n2. 分类和状态筛选\n3. 分页功能');
+        }
+        
+        // 页面加载完成提示
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 搜索和分页功能测试页面已加载');
+            console.log('📋 新增功能：');
+            console.log('1. 博客页面：搜索、过滤、分页');
+            console.log('2. 管理系统：搜索、筛选、分页');
+            console.log('3. 响应式设计和移动端优化');
+        });
+    </script>
+</body>
+</html>

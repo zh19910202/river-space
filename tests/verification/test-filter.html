@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章过滤测试</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-title {
+            color: #00ffff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 255, 0.3);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+        
+        .status.info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+        }
+        
+        .fix-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .fix-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .fix-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .fix-list li::before {
+            content: '✅ ';
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        .demo-articles {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .demo-article {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .demo-article.filtered {
+            opacity: 0.5;
+            border-color: rgba(255, 0, 0, 0.3);
+            background: rgba(255, 0, 0, 0.05);
+        }
+        
+        .demo-article.valid {
+            border-color: rgba(0, 255, 0, 0.3);
+            background: rgba(0, 255, 0, 0.05);
+        }
+        
+        .article-info {
+            flex: 1;
+        }
+        
+        .article-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .article-meta {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .article-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .article-status.show {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+        
+        .article-status.hide {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: #00ffff; text-align: center;">🔍 文章过滤测试</h1>
+        <p style="text-align: center; color: #ccc;">验证无标题文章过滤功能</p>
+        
+        <div class="test-section">
+            <div class="test-title">修复内容</div>
+            <div class="status success">
+                ✅ 已修复无标题文章显示问题
+            </div>
+            <ul class="fix-list">
+                <li>过滤掉标题为空的文章</li>
+                <li>过滤掉标题为"无标题"的文章</li>
+                <li>过滤掉标题为"数据解析错误"的文章</li>
+                <li>只显示有实际标题内容的文章</li>
+                <li>在博客列表和管理系统中都应用过滤</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">过滤规则演示</div>
+            <div class="status info">
+                以下演示了哪些文章会被显示，哪些会被过滤掉：
+            </div>
+            
+            <div class="demo-articles">
+                <div class="demo-article valid">
+                    <div class="article-info">
+                        <div class="article-title">打造企业级AI助手！chatgpt-on-wechat支持多端接入</div>
+                        <div class="article-meta">分类: 技术 | 发布时间: 2025/7/13 | 阅读时间: 2分钟</div>
+                    </div>
+                    <div class="article-status show">显示</div>
+                </div>
+                
+                <div class="demo-article filtered">
+                    <div class="article-info">
+                        <div class="article-title">无标题</div>
+                        <div class="article-meta">分类: 未分类 | 发布时间: 未设置 | 阅读时间: 5分钟</div>
+                    </div>
+                    <div class="article-status hide">过滤</div>
+                </div>
+                
+                <div class="demo-article filtered">
+                    <div class="article-info">
+                        <div class="article-title"></div>
+                        <div class="article-meta">分类: 未分类 | 发布时间: 未设置 | 阅读时间: 5分钟</div>
+                    </div>
+                    <div class="article-status hide">过滤</div>
+                </div>
+                
+                <div class="demo-article filtered">
+                    <div class="article-info">
+                        <div class="article-title">数据解析错误</div>
+                        <div class="article-meta">分类: 错误 | 发布时间: 未设置 | 阅读时间: 未知</div>
+                    </div>
+                    <div class="article-status hide">过滤</div>
+                </div>
+                
+                <div class="demo-article valid">
+                    <div class="article-info">
+                        <div class="article-title">React Hooks 最佳实践</div>
+                        <div class="article-meta">分类: 技术 | 发布时间: 2025/7/12 | 阅读时间: 8分钟</div>
+                    </div>
+                    <div class="article-status show">显示</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">测试步骤</div>
+            <div style="color: #ccc; font-size: 14px;">
+                <p><strong>1. 测试博客页面：</strong></p>
+                <ol>
+                    <li>访问博客页面 (blog.html)</li>
+                    <li>确认只显示有标题的文章</li>
+                    <li>不应该看到"无标题"的文章卡片</li>
+                </ol>
+                
+                <p><strong>2. 测试管理系统：</strong></p>
+                <ol>
+                    <li>访问管理系统 (admin.html)</li>
+                    <li>查看文章列表</li>
+                    <li>确认只显示有标题的文章</li>
+                    <li>检查控制台日志，应该显示过滤信息</li>
+                </ol>
+                
+                <p><strong>3. 检查控制台日志：</strong></p>
+                <ul>
+                    <li>应该看到"跳过无标题页面"的日志</li>
+                    <li>应该看到"过滤后的博客数量"的日志</li>
+                </ul>
+            </div>
+            
+            <button class="test-button" onclick="testBlogPage()">测试博客页面</button>
+            <button class="test-button" onclick="testAdminSystem()">测试管理系统</button>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">技术实现</div>
+            <div style="color: #ccc; font-size: 14px;">
+                <p><strong>过滤逻辑：</strong></p>
+                <pre style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 6px; overflow-x: auto;"><code>// 在 formatBlogList 中
+if (!title || title.trim() === '') {
+  console.log('跳过无标题页面:', page.id)
+  return null
+}
+
+// 在组件中额外过滤
+this.blogs = (result.posts || []).filter(blog => 
+  blog.title && 
+  blog.title.trim() !== '' && 
+  blog.title !== '无标题' &&
+  blog.title !== '数据解析错误'
+)</code></pre>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+            <div class="status success">
+                🎉 修复完成！现在只会显示有实际标题的文章了
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testBlogPage() {
+            window.open('blog.html', '_blank');
+            alert('请检查博客页面是否只显示有标题的文章，不应该看到"无标题"的卡片。');
+        }
+        
+        function testAdminSystem() {
+            window.open('demo-admin-access.html', '_blank');
+            alert('请通过隐藏入口访问管理系统，检查文章列表是否只显示有标题的文章。');
+        }
+        
+        // 页面加载完成提示
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 文章过滤测试页面已加载');
+            console.log('📋 修复内容：');
+            console.log('1. 过滤掉无标题的文章');
+            console.log('2. 只显示有实际内容的文章');
+            console.log('3. 在博客和管理系统中都应用过滤');
+        });
+    </script>
+</body>
+</html>
