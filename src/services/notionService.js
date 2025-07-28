@@ -787,21 +787,10 @@ export class NotionService {
     try {
       config.log(`📖 开始获取文章内容: ${pageId}`)
 
-      // 获取页面内容块
       const response = await this.apiClient.get(`/blocks/${pageId}/children`)
+
       config.log(`📁 获取到 ${response.results?.length || 0} 个内容块`)
 
-      // 打印前几个块的信息用于调试
-      if (response.results && response.results.length > 0) {
-        console.log('🔍 内容块调试信息:')
-        response.results.slice(0, 3).forEach((block, i) => {
-          console.log(`  块 ${i + 1}: 类型="${block.type}", 有内容=${!!block[block.type]}`)
-        })
-        // 打印完整的响应数据用于调试
-        console.log('📄 完整的响应数据:', JSON.stringify(response, null, 2))
-      }
-
-      // 如果没有内容块
       if (!response.results || response.results.length === 0) {
         config.log('⚠️ 页面没有内容块')
         return '<div style="text-align: center; padding: 60px 20px;"><h3 style="color: rgba(255,255,255,0.8);">📝 此文章暂无内容</h3><p style="color: rgba(255,255,255,0.6);">该文章在Notion中暂时没有内容块</p></div>'
@@ -811,35 +800,23 @@ export class NotionService {
       try {
         const content = this.contentParser.parseBlocks(response.results)
         config.log('✅ 成功解析Notion块内容，长度:', content?.length || 0)
-        config.log('📝 解析内容预览:', content?.substring(0, 200) || 'empty')
         
-        // 打印解析后的内容数据
-        console.log('📄 解析后的内容数据:', content)
-        
-        // 如果内容不为空且有实际内容，直接返回
-        if (content && content.trim().length > 0 && 
-            !content.includes('<p class="no-content">') &&
-            !content.includes('<p class="empty-result">')) {
+        if (content && content.trim().length > 0) {
           return content
         } else {
-          config.log('⚠️ Notion块内容解析结果为空或无效')
+          config.log('⚠️ Notion块内容解析结果为空')
           return `<div style="text-align: center; padding: 60px 20px;">
             <h3 style="color: rgba(255,255,255,0.8);">📝 文章内容解析中</h3>
             <p style="color: rgba(255,255,255,0.6);">检测到 ${response.results.length} 个内容块，但暂时无法显示</p>
-            <p style="color: rgba(255,255,255,0.5); font-size: 14px;">这通常是因为内容块类型不支持或格式特殊</p>
           </div>`
         }
       } catch (parseError) {
         console.error('❌ 解析Notion块失败:', parseError)
-        // 打印解析错误的详细信息
-        console.error('❌ 解析错误详情:', parseError.stack)
         return '<div style="text-align: center; padding: 60px 20px; color: rgba(255,0,0,0.8);"><h3>❌ 内容解析失败</h3><p>无法解析Notion内容块</p></div>'
       }
     } catch (error) {
       config.error('❌ 获取文章内容失败:', error)
-      // 打印获取内容错误的详细信息
-      console.error('❌ 获取文章内容错误详情:', error.stack)
-      throw new Error(`获取文章内容失败: ${error.message}`)
+      return '<div style="text-align: center; padding: 60px 20px; color: rgba(255,0,0,0.8);"><h3>❌ 加载失败</h3><p>无法加载文章内容，请稍后重试</p></div>'
     }
   }
 

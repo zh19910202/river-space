@@ -90,7 +90,15 @@
       "Bash(mv PROJECT_STRUCTURE.md docs/)",
       "Bash(mv README-OPTIMIZED.md docs/)",
       "Bash(python3 tools/servers/static-server.py)",
-      "Bash(kill 8681)"
+      "Bash(kill 8681)",
+      "Bash(rm -f dev-server.js .env.local DEVELOPMENT_GUIDE.md ENV_SETUP.md .env.template)",
+      "Bash(npm run dev --dry-run)",
+      "Bash(rm api/notion/blog/[pageId].js api/notion/blogs.js api/notion/content/[pageId].js)",
+      "Bash(rm -f api/notion/blogs.js api/notion/content/[pageId].js)",
+      "Bash(rm -rf api/notion/blog api/notion/content)",
+      "Bash(rm -f api/notion/blogs.js)",
+      "Bash(rm -rf api/notion/blocks/[pageId])",
+      "Bash(rm -rf \"api/notion/blocks/[pageId]\")"
     ],
     "deny": []
   }

@@ -14,7 +14,8 @@ class AppConfig {
       apiKey: import.meta.env.VITE_NOTION_API_KEY || '',
       databaseId: import.meta.env.VITE_NOTION_DATABASE_ID || '',
       apiVersion: '2022-06-28',
-      baseUrl: import.meta.env.DEV ? '/api/notion' : 'https://api.notion.com/v1'
+      // Use Vite proxy in dev, serverless functions in production
+      baseUrl: import.meta.env.PROD ? '/api/notion' : '/api/notion'
     }
 
     // 应用基本配置

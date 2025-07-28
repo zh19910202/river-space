@@ -19,7 +19,7 @@ export class ApiClient {
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`
     
-    // 代理已经处理认证，这里只需要基本头部
+    // In development, Vite proxy handles auth; in production, serverless functions handle auth
     const headers = {
       'Content-Type': 'application/json',
       ...options.headers
