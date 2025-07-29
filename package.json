@@ -16,7 +16,11 @@
     "notion:setup": "node scripts/notion-setup.js",
     "proxy": "node github-proxy-server.js",
     "dev:full": "concurrently \"npm run proxy\" \"npm run dev\"",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "vercel:dev": "vercel dev",
+    "vercel:build": "vercel build",
+    "vercel:prod": "vercel dev --prod",
+    "prod:local": "NODE_ENV=production npm run build && npm run serve"
   },
   "keywords": [
     "portfolio",

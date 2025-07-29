@@ -5,8 +5,8 @@
     }
   },
   "env": {
-    "NOTION_API_KEY": "@notion-api-key",
-    "NOTION_DATABASE_ID": "@notion-database-id"
+    "VITE_NOTION_API_KEY": "@vite-notion-api-key",
+    "VITE_NOTION_DATABASE_ID": "@vite-notion-database-id"
   },
   "build": {
     "env": {
