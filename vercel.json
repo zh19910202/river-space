@@ -1,22 +1,9 @@
 {
   "functions": {
     "api/**/*.js": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs18.x"
     }
   },
-
-  "build": {
-    "env": {
-      "VITE_APP_TITLE": "River Space",
-      "VITE_APP_DESCRIPTION": "智能合约开发工程师个人网站与技术博客"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/api/notion/:path*",
-      "destination": "/api/notion/:path*"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
