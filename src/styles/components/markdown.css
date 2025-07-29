@@ -416,3 +416,93 @@
 .blog-article-content {
   color: rgba(255, 255, 255, 0.9) !important;
 }
+
+/* 代码复制功能样式 - 静态定义确保构建时包含 */
+.code-block-wrapper {
+  position: relative;
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  border-radius: 4px;
+}
+
+.code-block-wrapper:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.code-copy-btn:hover {
+  color: #00ffff;
+}
+
+.code-copy-btn.copied {
+  color: #00ff80;
+}
+
+.code-copy-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  transition: transform 0.2s ease;
+}
+
+.code-copy-btn:hover svg {
+  transform: scale(1.1);
+}
+
+.copy-text {
+  display: none;
+}
+
+/* 确保代码块有足够的右边距 */
+.code-block-wrapper pre {
+  padding-right: 50px !important;
+  position: relative;
+}
+
+/* Bash命令特殊样式 */
+.language-bash .code-copy-btn,
+.language-shell .code-copy-btn,
+.language-sh .code-copy-btn {
+  color: rgba(0, 255, 255, 0.7);
+}
+
+.language-bash .code-copy-btn:hover,
+.language-shell .code-copy-btn:hover,
+.language-sh .code-copy-btn:hover {
+  color: #00ffff;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .code-copy-btn {
+    top: 16px;
+    right: 16px;
+    padding: 4px;
+  }
+  
+  .code-copy-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .code-block-wrapper pre {
+    padding-right: 40px !important;
+  }
+}

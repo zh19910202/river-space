@@ -22,12 +22,20 @@ export class CodeBlockCopy {
     }
 
     /**
-     * 添加CSS样式
+     * 添加CSS样式 - 检查是否已在CSS文件中定义
      */
     addStyles() {
         const styleId = 'code-copy-styles'
         if (document.getElementById(styleId)) return
 
+        // 检查是否已经存在静态CSS样式
+        const existingStyles = document.querySelector('.code-copy-btn')
+        if (existingStyles) {
+            console.log('✅ 代码复制样式已通过CSS文件加载')
+            return
+        }
+
+        // 如果没有静态样式，则动态添加（主要用于开发环境）
         const style = document.createElement('style')
         style.id = styleId
         style.textContent = `
@@ -121,6 +129,7 @@ export class CodeBlockCopy {
       }
     `
         document.head.appendChild(style)
+        console.log('✅ 动态添加代码复制样式')
     }
 
     /**

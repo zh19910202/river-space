@@ -98,7 +98,8 @@
       "Bash(rm -rf api/notion/blog api/notion/content)",
       "Bash(rm -f api/notion/blogs.js)",
       "Bash(rm -rf api/notion/blocks/[pageId])",
-      "Bash(rm -rf \"api/notion/blocks/[pageId]\")"
+      "Bash(rm -rf \"api/notion/blocks/[pageId]\")",
+      "Bash(grep -o \"\\.code-copy-btn[^{]*{[^}]*}\" /Users/snow/river-space/dist/assets/css/blog-C-X3XYay.css)"
     ],
     "deny": []
   }
