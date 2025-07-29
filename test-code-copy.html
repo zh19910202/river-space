@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码复制功能测试</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 40px 20px;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #00ffff;
+            font-size: 32px;
+            margin-bottom: 40px;
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .test-section {
+            margin: 60px 0;
+            padding: 30px;
+            background: rgba(26, 26, 46, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h2 {
+            color: #00ffff;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        code {
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .demo-note {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            margin: 15px 0;
+        }
+        
+        .demo-note strong {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <h1>代码复制功能测试页面</h1>
+    
+    <div class="test-section">
+        <h2>🔧 Bash 命令测试</h2>
+        <p>测试 bash 命令的复制功能，应该自动清理 $ 提示符</p>
+        <pre><code class="language-bash">npm install -g vercel
+vercel login
+vercel deploy</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 复制时会自动移除 $ 提示符，复制图标在容器内右上角，不超出边框
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📜 Shell 脚本测试</h2>
+        <p>测试 shell 脚本的复制功能</p>
+        <pre><code class="language-shell">#!/bin/bash
+echo "Hello World"
+cd /path/to/project
+npm run build</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 保持原始格式，按钮在代码块顶部居中显示
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>⚡ JavaScript 代码测试</h2>
+        <p>测试普通编程语言的复制功能</p>
+        <pre><code class="language-javascript">function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('复制成功');
+    });
+}</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 保持原始格式，按钮垂直居中靠右显示
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📝 普通文本测试</h2>
+        <p>测试无语言标识的代码块</p>
+        <pre><code>这是一段普通的文本内容
+没有特定的语言标识
+应该显示普通的复制按钮</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 保持原始格式，按钮垂直居中靠右显示
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>💻 带提示符的命令测试</h2>
+        <p>测试带有 $ 提示符的 bash 命令</p>
+        <pre><code class="language-bash">$ npm install
+$ git add .
+$ git commit -m "添加代码复制功能"
+$ git push origin main</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 复制时自动移除所有 $ 提示符，只保留实际命令
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎨 Python 代码测试</h2>
+        <p>测试另一种编程语言的样式</p>
+        <pre><code class="language-python">def copy_to_clipboard(text):
+    import pyperclip
+    pyperclip.copy(text)
+    print("复制成功")
+
+# 使用示例
+copy_to_clipboard("Hello World")</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 保持原始格式，包括注释，按钮在右上角显示，避免与代码重叠
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📏 长命令测试</h2>
+        <p>测试很长的 bash 命令，验证复制按钮不会与命令重叠</p>
+        <pre><code class="language-bash">docker run -it --rm -v $(pwd):/workspace -w /workspace -p 3000:3000 -p 8080:8080 --name my-dev-container node:18-alpine sh -c "npm install && npm run dev"</code></pre>
+        <div class="demo-note">
+            <strong>预期行为:</strong> 长命令不会与复制图标重叠，图标完全在容器边框内
+        </div>
+    </div>
+
+    <script type="module">
+        import { initCodeBlockCopy } from './src/utils/codeBlockCopy.js';
+        
+        // 页面加载完成后初始化代码复制功能
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('初始化代码复制功能...');
+            const codeBlockCopy = initCodeBlockCopy();
+            console.log('代码复制功能已初始化');
+        });
+    </script>
+</body>
+</html>

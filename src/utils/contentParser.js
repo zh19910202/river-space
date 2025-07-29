@@ -244,8 +244,10 @@ export class ContentParser {
             console.log('🔄 检测到Markdown内容的代码块，直接使用内容而不包装')
             return code  // 直接返回内容，不包装为代码块
           } else {
+            // 标准化bash相关的语言标识
+            const normalizedLanguage = this.normalizeBashLanguage(language)
             // 正常的代码块
-            return `\`\`\`${language}\n${code}\n\`\`\``
+            return `\`\`\`${normalizedLanguage}\n${code}\n\`\`\``
           }
           
         case 'quote':
@@ -346,6 +348,27 @@ export class ContentParser {
   }
 
   /**
+   * 标准化bash相关的语言标识
+   * @param {string} language - 原始语言标识
+   * @returns {string} 标准化后的语言标识
+   * @private
+   */
+  normalizeBashLanguage(language) {
+    const bashAliases = {
+      'shell': 'bash',
+      'sh': 'bash',
+      'zsh': 'bash',
+      'fish': 'bash',
+      'terminal': 'bash',
+      'console': 'bash',
+      'command': 'bash'
+    }
+    
+    const normalizedLang = language.toLowerCase()
+    return bashAliases[normalizedLang] || language
+  }
+
+  /**
    * HTML转义函数
    * @param {string} text - 需要转义的文本
    * @returns {string} 转义后的文本
@@ -400,9 +423,12 @@ export class ContentParser {
           return `<pre><code class="language-${language}"><!-- 空代码块 --></code></pre>`
         }
         
+        // 标准化bash相关的语言标识
+        const normalizedLanguage = this.normalizeBashLanguage(language)
+        
         // 直接显示为代码块，不进行特殊的Markdown解析
         // （Markdown解析现在由parseBlocks方法统一处理）
-        return `<pre><code class="language-${language}">${this.escapeHtml(code)}</code></pre>`
+        return `<pre><code class="language-${normalizedLanguage}">${this.escapeHtml(code)}</code></pre>`
         
       case 'quote':
         return `<blockquote>${this.parseRichText(content.rich_text)}</blockquote>`

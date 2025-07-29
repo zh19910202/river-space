@@ -6,6 +6,7 @@
 import { notionService } from '../services/notionService.js'
 import { config } from '../config/index.js'
 import { ContentParser } from '../utils/contentParser.js'
+import { initCodeBlockCopy } from '../utils/codeBlockCopy.js'
 
 export class BlogComponent {
   constructor(container) {
@@ -854,6 +855,14 @@ export class BlogComponent {
     contentContainer.appendChild(articleElement)
     
     console.log('✅ 详情页面内容已更新')
+    
+    // 初始化代码块复制功能
+    try {
+      const codeBlockCopy = initCodeBlockCopy()
+      console.log('✅ 代码块复制功能已初始化')
+    } catch (error) {
+      console.warn('⚠️ 代码块复制功能初始化失败:', error)
+    }
     
     // 验证DOM中的内容
     setTimeout(() => {
