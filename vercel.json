@@ -4,10 +4,7 @@
       "runtime": "@vercel/node"
     }
   },
-  "env": {
-    "VITE_NOTION_API_KEY": "@vite-notion-api-key",
-    "VITE_NOTION_DATABASE_ID": "@vite-notion-database-id"
-  },
+
   "build": {
     "env": {
       "VITE_APP_TITLE": "River Space",
